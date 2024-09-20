@@ -31,12 +31,12 @@ func ModelToHTML(out io.Writer, model *Model) error {
 	}
 	if !model.HasElementType("submit") {
 		cssName := fmt.Sprintf("%s-submit", cssBaseClass)
-		fmt.Printf(`  <div class=%q><input class=%q type="submit" value="submit"> <input class=%q type="reset" value="cancel"></div>`,
+		fmt.Fprintf(out, `  <div class=%q><input class=%q type="submit" value="submit"> <input class=%q type="reset" value="cancel"></div>`,
 			cssName, cssName, cssName)
 	}
 
 	// Write closing form element
-	fmt.Fprintf(out, "</form>\n")
+	fmt.Fprintf(out, "\n</form>\n")
 	return nil
 }
 
