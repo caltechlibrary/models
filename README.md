@@ -1,4 +1,9 @@
 
+[![License](https://img.shields.io/badge/License-BSD--like-lightgrey)](https://github.com/caltechlibrary/template/blob/main/LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/template.svg?color=b44e88)](https://github.com/caltechlibrary/template/releases)
+[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&style=flat-square&colorA=gray&colorB=navy&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/1n20b-6y141/versions/latest)](https://data.caltech.edu/records/1n20b-6y141/latest)
+
+
 # models
 
 This is a Go package used to describe data models aligned with the HTML5 data types. The model can be expressed in YAML or JSON. The YAML (or JSON) data structure is patterned after the HTML5 form elements. A single model can be used to generate HTML web forms or used to validate a map that confirms to the model. In princple generators can be written to express the model in other forms, e.g. SQL.
