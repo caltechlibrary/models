@@ -1,4 +1,4 @@
-%modelgen(1) user manual | version 0.0.1 070a162
+%modelgen(1) user manual | version 0.0.1 fc5f503
 % R. S. Doiel
 % 2024-09-20
 
@@ -8,7 +8,7 @@ modelgen
 
 # SYNOPSIS
 
-modelgen [OPTIONS] html|sqlite3 [MODEL_NAME] [OUT_NAME]
+modelgen [OPTIONS] html|sqlite [MODEL_NAME] [OUT_NAME]
 
 # DESCRIPTION
 
@@ -37,7 +37,7 @@ then standard out is used.
 
 ~~~
 modelgen html guestbook.yaml guestbook.html
-modelgen sqlite3 guestbook.yaml guestbook.sql
+modelgen sqlite guestbook.yaml guestbook.sql
 ~~~
 
 

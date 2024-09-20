@@ -26,7 +26,7 @@ const (
 
 # SYNOPSIS
 
-{app_name} [OPTIONS] html|sqlite3 [MODEL_NAME] [OUT_NAME]
+{app_name} [OPTIONS] html|sqlite [MODEL_NAME] [OUT_NAME]
 
 # DESCRIPTION
 
@@ -55,7 +55,7 @@ then standard out is used.
 
 ~~~
 {app_name} html guestbook.yaml guestbook.html
-{app_name} sqlite3 guestbook.yaml guestbook.sql
+{app_name} sqlite guestbook.yaml guestbook.sql
 ~~~
 
 `
