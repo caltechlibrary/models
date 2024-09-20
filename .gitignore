@@ -25,6 +25,8 @@ go.work.sum
 .env
 
 # Project excludes
+testout/
+dist/
 bin/
 man/
 _codemeta.json
