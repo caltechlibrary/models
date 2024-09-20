@@ -313,12 +313,12 @@ func (model *Model) RemoveElement(elementId string) error {
 
 // ToSQLiteScheme takes a model and trys to render a SQLite3 SQL create statement.
 func (model *Model) ToSQLiteScheme(out io.Writer) error {
-	return ModelToSQLiteScheme(out)
+	return ModelToSQLiteScheme(out, model)
 }
 
 // ToHTML takes a model and trys to render an HTML web form
 func (model *Model) ToHTML(out io.Writer) error {
-	return ModelToHTML(out)
+	return ModelToHTML(out, model)
 }
 
 // getAttributeIds returns a list of attribue keys in a maps[string]interface{} structure

@@ -5,6 +5,6 @@ import (
 	"io"
 )
 
-func ModelToSQLiteScheme(out io.Writer) error {
+func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 	return fmt.Errorf("ModelToSQLiteScheme not implemented")
 }
