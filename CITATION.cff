@@ -15,6 +15,6 @@ authors:
 
 
 repository-code: "https://github.com/caltechlibary/models"
-version: 0.0.0
+version: 0.0.1
 
 keywords: [ "metadata" ]

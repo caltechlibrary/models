@@ -14,7 +14,7 @@ authors:
     orcid: ""
 
 repository-code: "https://github.com/caltechlibary/models"
-version: 0.0.0
+version: 0.0.1
 
 keywords: [ "metadata" ]
 
@@ -23,7 +23,7 @@ keywords: [ "metadata" ]
 About this software
 ===================
 
-## models 0.0.0
+## models 0.0.1
 
 ### Authors
 
