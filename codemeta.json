@@ -1,5 +1,5 @@
 {
-    "@context": "https://w3id.org/codemeta/3.0",
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "type": "SoftwareSourceCode",
     "author": [
         {
@@ -12,39 +12,40 @@
             "email": "rsdoiel@caltech.edu",
             "familyName": "Doiel",
             "givenName": "R. S."
-        },
-        {
-            "type": "Role",
-            "schema:author": "https://orcid.org/0000-0003-0900-6903",
-            "roleName": "Developer",
-            "startDate": "2024-09-20"
         }
     ],
     "codeRepository": "https://github.com/caltechlibary/models",
     "dateCreated": "2024-09-20",
+    "dateModified": "2024-09-20",
+    "datePublished": "2024-09-20",
     "description": "A Go package for working with simple data models inspired by HTML5 web forms.",
+    "downloadUrl": "https://github.com/caltechlibrary/models/releases",
     "funder": {
         "type": "Organization",
         "name": "Caltech Library"
     },
     "keywords": "metadata",
+    "license": "https://spdx.org/licenses/BSD-3-Clause",
     "name": "models",
     "operatingSystem": [
         "Linux",
         "Windows",
         "macOS"
     ],
-    "programmingLanguage": "Go",
+    "programmingLanguage": {
+		"name": "Go",
+		"version": "1.23.1"
+	},
     "relatedLink": [
         "https://github.com/caltechlibrary/dataset",
         "https://github.com/caltechlibrary/newt"
     ],
-    "releaseNotes": "Initial Sketch",
+    "schema:releaseNotes": "Proof of concept",
     "softwareRequirements": [
-		"Go >= 1.23.1",
-		"GNU Make",
-		"Pandoc >= 3.1"
-	],
+        "Go >= 1.23.1",
+        "GNU Make",
+        "Pandoc >= 3.1"
+    ],
     "version": "0.0.1",
     "developmentStatus": "concept",
     "issueTracker": "https://github.com/caltehclibrary/models/isues"

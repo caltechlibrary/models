@@ -9,15 +9,12 @@ authors:
   - family-names: Doiel
     given-names: R. S.
     orcid: ""
-  - family-names: 
-    given-names: 
-    orcid: ""
 
 repository-code: "https://github.com/caltechlibary/models"
 version: 0.0.1
-
+license-url: "https://spdx.org/licenses/BSD-3-Clause"
 keywords: [ "metadata" ]
-
+date-released: 2024-09-20
 ---
 
 About this software
@@ -28,21 +25,20 @@ About this software
 ### Authors
 
 - R. S. Doiel
--  
 
 
 
 A Go package for working with simple data models inspired by HTML5 web
 forms.
 
-
+- License: <https://spdx.org/licenses/BSD-3-Clause>
 - GitHub: <https://github.com/caltechlibary/models>
 - Issues: <https://github.com/caltehclibrary/models/isues>
 
 
 ### Programming languages
 
--  
+- Go 1.23.1
 
 ### Operating Systems
 
