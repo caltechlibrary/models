@@ -100,7 +100,7 @@ func TestModelBuilding(t *testing.T) {
 	}
 	/*
 	   func (e *Element) Check(buf io.Writer) bool {
-	   func isValidVarname(s string) bool {
+	   func IsValidVarname(s string) bool {
 	   func NewElement(elementId string) (*Element, error) {
 	   func (model *Model) InsertElement(pos int, element *Element) error {
 	   func (model *Model) UpdateElement(elementId string, element *Element) error {

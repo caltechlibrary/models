@@ -7,7 +7,7 @@ import (
 )
 
 func ModelToSQLiteScheme(out io.Writer, model *Model) error {
-	if ! isValidVarname(model.Id) {
+	if ! IsValidVarname(model.Id) {
 		return fmt.Errorf("model id that can't be used for table name, %q", model.Id)
 	}
 	if model.Title != "" {
@@ -21,7 +21,7 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 	fmt.Fprintf(out, "create table %s if not exists (\n", model.Id)
 	addNL := false
     for i, elem := range model.Elements {
-		if ! isValidVarname(elem.Id) {
+		if ! IsValidVarname(elem.Id) {
 			return fmt.Errorf("element id can't be used for column name, %q", elem.Id)
 		}
 		if i > 0 {

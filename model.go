@@ -188,8 +188,8 @@ func (e *Element) Check(buf io.Writer) bool {
 	return ok
 }
 
-// isValidVarname tests a sting confirms it conforms to Model's naming rule.
-func isValidVarname(s string) bool {
+// IsValidVarname tests a sting confirms it conforms to Model's naming rule.
+func IsValidVarname(s string) bool {
 	if len(s) == 0 {
 		return false
 	}
@@ -202,7 +202,7 @@ func isValidVarname(s string) bool {
 // NewElement, makes sure element id is valid, populates an element as a basic input type.
 // The new element has the attribute "name" and label set to default values. 
 func NewElement(elementId string) (*Element, error) {
-	if !isValidVarname(elementId) {
+	if !IsValidVarname(elementId) {
 		return nil, fmt.Errorf("invalid element id, %q", elementId)
 	}
 	element := new(Element)
@@ -218,7 +218,7 @@ func NewElement(elementId string) (*Element, error) {
 // NewModel, makes sure model id is valid, populates a Model with the identifier element providing
 // returns a *Model and error value.
 func NewModel(modelId string) (*Model, error) {
-	if !isValidVarname(modelId) {
+	if !IsValidVarname(modelId) {
 		return nil, fmt.Errorf("invalid model id, %q", modelId)
 	}
 	model := new(Model)
@@ -282,7 +282,7 @@ func (model *Model) InsertElement(pos int, element *Element) error {
 	if model.Elements == nil {
 		model.Elements = []*Element{}
 	}
-	if !isValidVarname(element.Id) {
+	if !IsValidVarname(element.Id) {
 		return fmt.Errorf("element id is not value")
 	}
 	if model.HasElement(element.Id) {
