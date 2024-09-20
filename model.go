@@ -61,6 +61,11 @@ func (model *Model) HasChanges() bool {
 	return false
 }
 
+// Changed sets the change state
+func (model *Model) Changed(state bool) {
+	model.isChanged = state
+}
+
 // HasElement checks if the model has a given element id
 func (model *Model) HasElement(elementId string) bool {
 	for _, e := range model.Elements {
