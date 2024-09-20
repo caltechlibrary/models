@@ -170,6 +170,16 @@ type Element struct {
 	isChanged bool `json:"-" yaml:"-"`
 }
 
+// HasChanged checks to see if the Element has been changed.
+func (e *Element) HasChanged() bool {
+	return e.isChanged
+}
+
+// Changed sets the change state on element
+func (e *Element) Changed(state bool) {
+	e.isChanged = state
+}
+
 // Check reviews an Element to make sure if is value.
 func (e *Element) Check(buf io.Writer) bool {
 	ok := true
