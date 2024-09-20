@@ -1,0 +1,25 @@
+id: test_model
+attributes:
+  method: GET
+  action: ./
+  x-success: http://localhost:8000/success.html
+  x-fail: http://localhost:8000/failed.html
+elements:
+  - id: id
+    type: text
+    attributes:
+      name: id
+      placeholder: Enter a unique string
+      required: true
+    is_primary_id: true
+  - id: name
+    type: text
+    attributes:
+      name: name
+      placeholdertext: Enter your name
+      required: true
+  - id: msg
+    type: textarea
+    attributes:
+      name: msg
+      placehodertext: Enter a short message or comment
