@@ -311,6 +311,16 @@ func (model *Model) RemoveElement(elementId string) error {
 	return fmt.Errorf("%q element id is missing", elementId)
 }
 
+// ToSQLiteScheme takes a model and trys to render a SQLite3 SQL create statement.
+func (model *Model) ToSQLiteScheme(out io.Writer) error {
+	return ModelToSQLiteScheme(out)
+}
+
+// ToHTML takes a model and trys to render an HTML web form
+func (model *Model) ToHTML(out io.Writer) error {
+	return ModelToHTML(out)
+}
+
 // getAttributeIds returns a list of attribue keys in a maps[string]interface{} structure
 func getAttributeIds(m map[string]string) []string {
         ids := []string{}
@@ -324,3 +334,5 @@ func getAttributeIds(m map[string]string) []string {
         }
         return ids
 }
+
+

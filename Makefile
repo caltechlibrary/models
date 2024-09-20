@@ -11,9 +11,7 @@ RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
 
 PROGRAMS = modelgen
 
-MAN_PAGES = model.1 modelgen.1
-
-MAN_PAGES_LIB = 
+MAN_PAGES = modelgen.1
 
 MAN_PAGES_MISC = model.5
 
@@ -81,7 +79,7 @@ CITATION.cff: codemeta.json .FORCE
 
 about.md: codemeta.json .FORCE
 	@cat codemeta.json | sed -E   's/"@context"/"at__context"/g;s/"@type"/"at__type"/g;s/"@id"/"at__id"/g' >_codemeta.json
-	echo "" | pandoc --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-md.tmpl >about.md
+	echo "" | pandoc --metadata title="About $(PROGRAM)" --metadata-file=_codemeta.json --template=codemeta-about.tmpl >about.md
 
 installer.sh: .FORCE
 	@echo '' | pandoc --metadata title="Installer" --metadata git_org_or_person="$(GIT_GROUP)" --metadata-file codemeta.json --template codemeta-bash-installer.tmpl >installer.sh

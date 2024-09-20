@@ -40,7 +40,11 @@
         "https://github.com/caltechlibrary/newt"
     ],
     "releaseNotes": "Initial Sketch",
-    "softwareRequirements": "Go >= 1.23.1",
+    "softwareRequirements": [
+		"Go >= 1.23.1",
+		"GNU Make",
+		"Pandoc >= 3.1"
+	],
     "version": "0.0.0",
     "developmentStatus": "concept",
     "issueTracker": "https://github.com/caltehclibrary/models/isues"

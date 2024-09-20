@@ -137,9 +137,15 @@ func main() {
 	verb := strings.ToLower(args[0])
 	switch verb {
 		case "html":
-			fmt.Fprintf(eout, "Render as HTML not implemented\n")
+			if err := model.ToHTML(out); err != nil {
+				fmt.Fprintf(eout, "ERROR: %s\n", err)
+				os.Exit(1)
+			}
 		case "sqlite3":
-			fmt.Fprintf(eout, "Render as SQLite3 scheme not implemented\n")
+			if err := model.ToSQLiteScheme(out); err != nil {
+				fmt.Fprintf(eout, "ERROR: %s\n", err)
+				os.Exit(1)
+			}
 		default:
 			fmt.Fprintf(eout, "%q output format not supported\n", verb)
 			os.Exit(1)

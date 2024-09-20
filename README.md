@@ -33,7 +33,7 @@ attributes:
 elements:
   - id: record_id
     type: text
-    pattern: [a-z]+\.[a-z]+
+    pattern: [a-z0-9]+\.[a-z0-9]+
     attributes:
       name: record_id
       placeholder: A unique record id

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dataset Project</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://caltechlibrary.github.io/css/site.css">
+</head>
+<body>
+<header>
+<a href="http://library.caltech.edu" title="link to Caltech Library Homepage"><img src="https://caltechlibrary.github.io/assets/liblogo.gif" alt="Caltech Library logo"></a>
+</header>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="install.html">INSTALL</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+	<li><a href="search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/models">GitHub</a></li>
+</ul>
+</nav>
+
+<section>
+<h1 id="name">NAME</h1>
+<p>models</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<pre><code>import &quot;github.com/caltechlibrary/models&quot;</code></pre>
+<h1 id="description">DESCRIPTION</h1>
+<p><strong>models</strong> is a Go package. A model is expressed in
+YAML. They are used by <code>modelgen</code> to render HTML web forms or
+SQLite3 schema.</p>
+<h2 id="model">Model</h2>
+<dl>
+<dt>id</dt>
+<dd>
+The identifier for the model. Is the “id” given to the generated HTML
+web form.
+</dd>
+<dt>title</dt>
+<dd>
+If provided it will be used to insert a title above your web form.
+</dd>
+<dt>attributes</dt>
+<dd>
+These map to the HTML attributes in a web form. Typical you would
+include method (e.g. GET, POST) and action (e.g. a URL to the form
+page). Attributes are a key/value map of form attributes.
+</dd>
+<dt>description</dt>
+<dd>
+This is simple description of the model. It will be included as a
+comment in the SQLite3 SQL. This is a text string or block.
+</dd>
+<dt>elements</dt>
+<dd>
+This is a listof elements that describe the data attritubes of your
+model.
+</dd>
+</dl>
+<h2 id="elements">Elements</h2>
+<p>The elements attribute holds a list of elements. You can think of
+these as HTML5 form elements described in YAML. They will also be used
+to infer SQLite 3 column types.</p>
+<p>Each element is made from the following properties.</p>
+<dl>
+<dt>type</dt>
+<dd>
+(required) This is a string and maps to the input element types
+available in HTML5<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>.
+</dd>
+<dt>id</dt>
+<dd>
+(optional) This is the element’s identifier. It should be unique with in
+the model. While optional it is used to retrieve an element from a
+model. If is also required when rendering colum definitions in SQLite 3.
+A model that includes a submit or reset button would examples of when to
+leave it blank.
+</dd>
+<dt>attributes</dt>
+<dd>
+(optional) This is a list of key/value pairs that map to HTML5 input
+elements. Boolean HTML element attributes like “required” and “checked”
+you are expressed as <code>required: true</code> and
+<code>checked: true</code> in YAML. NOTE: attributes value’s are
+resolved to quoted strings when rendered as HTML.
+</dd>
+<dt>pattern</dt>
+<dd>
+(optional) This is a regular expression pattern that is used to validate
+the input of the element<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>.
+</dd>
+<dt>options</dt>
+<dd>
+(optional) Are a list of key/value maps used to expression HTML5 select
+elements. They can be be used in validation of a model’s content as well
+as in render HTML selection elements.
+</dd>
+<dt>is_primary_id</dt>
+<dd>
+(optional) If set to true it indicates a given element holds the model’s
+primary identifier. If you are store model content in a SQLite 3
+database or Dataset collection this would be the unique identifier used
+to retrieve the modeled object.
+</dd>
+<dt>label</dt>
+<dd>
+(optional) If set it is used as the text content of the label when
+rendering a web form.
+</dd>
+</dl>
+<h1 id="example">Example</h1>
+<p>This is an example model of a guest book entry used in a Dataset base
+guest book web application.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> test_model</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">method</span><span class="kw">:</span><span class="at"> GET</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">action</span><span class="kw">:</span><span class="at"> ./</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">x-success</span><span class="kw">:</span><span class="at"> http://localhost:8000/success.html</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">x-fail</span><span class="kw">:</span><span class="at"> http://localhost:8000/failed.html</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">elements</span><span class="kw">:</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> id</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> text</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> id</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">placeholder</span><span class="kw">:</span><span class="at"> Enter a unique string</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">required</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">is_primary_id</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> name</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> text</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> name</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">placeholdertext</span><span class="kw">:</span><span class="at"> Enter your name</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">required</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> msg</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> textarea</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> msg</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">placehodertext</span><span class="kw">:</span><span class="at"> Enter a short message or comment</span></span></code></pre></div>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>See <a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input"
+class="uri">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input</a>
+for details.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>See <a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern"
+class="uri">https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern</a>
+for details of how patterns are used in validation.<a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</section>
+
+<footer>
+<span>&copy; 2024 <a href="https://www.library.caltech.edu/copyright">Caltech Library</a></span>
+<address>1200 E California Blvd, Mail Code 1-32, Pasadena, CA 91125-3200</address>
+<span><a href="mailto:library@caltech.edu">Email Us</a></span>
+<span>Phone: <a href="tel:+1-626-395-3405">(626)395-3405</a></span>
+</footer>
+</body>
+</html>

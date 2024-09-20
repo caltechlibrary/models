@@ -23,7 +23,37 @@
 </nav>
 
 <section>
-${body}
+<h1 id="name">NAME</h1>
+<p>modelgen</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>modelgen <a href="#options">OPTIONS</a> html|sqlite3 [MODEL_NAME]
+[OUT_NAME]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>modelgen is a demonstration of the models package for Go. It can read
+a model expressed as YAML and transform the result into an HTML web form
+or SQLite3 database schema.</p>
+<p>MODEL_NAME is the name of the YAML file to read. If no filename is
+provided then the model is read from standard input.</p>
+<p>OUT_NAME is the name of the file to write. If it is loft off then
+then standard out is used.</p>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-help</dt>
+<dd>
+Display help
+</dd>
+<dt>-version</dt>
+<dd>
+Display modelgen version.
+</dd>
+<dt>-license</dt>
+<dd>
+Display modelgen license.
+</dd>
+</dl>
+<h1 id="example">EXAMPLE</h1>
+<pre><code>modelgen html guestbook.yaml guestbook.html
+modelgen sqlite3 guestbook.yaml guestbook.sql</code></pre>
 </section>
 
 <footer>
