@@ -1,4 +1,8 @@
 id: test_model
+title: demo model proof of concept.
+description: |
+  This is an example of a test model.
+  It shows how to generate content using Model's YAML notation.
 attributes:
   method: GET
   action: ./
@@ -8,18 +12,18 @@ elements:
   - id: id
     type: text
     attributes:
-      name: id
       placeholder: Enter a unique string
       required: true
     is_primary_id: true
+    label: Identifier
   - id: name
     type: text
     attributes:
-      name: name
-      placeholdertext: Enter your name
+      placeholder: Enter your name
       required: true
+    label: Guest name
   - id: msg
     type: textarea
     attributes:
-      name: msg
-      placehodertext: Enter a short message or comment
+      placehoder: Enter a short message or comment
+    label: Message, Comment

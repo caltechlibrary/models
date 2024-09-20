@@ -133,22 +133,14 @@ func main() {
 		fmt.Fprintf(eout, "ERROR: problem with model")
 		os.Exit(1)
 	}
+	model.Register("html", models.ModelToHTML)
+	model.Register("sqlite", models.ModelToSQLiteScheme)
+	model.Register("sqlite3", models.ModelToSQLiteScheme)
     // Now transform the model.	
 	verb := strings.ToLower(args[0])
-	switch verb {
-		case "html":
-			if err := model.ToHTML(out); err != nil {
-				fmt.Fprintf(eout, "ERROR: %s\n", err)
-				os.Exit(1)
-			}
-		case "sqlite3":
-			if err := model.ToSQLiteScheme(out); err != nil {
-				fmt.Fprintf(eout, "ERROR: %s\n", err)
-				os.Exit(1)
-			}
-		default:
-			fmt.Fprintf(eout, "%q output format not supported\n", verb)
-			os.Exit(1)
+	if err := model.Render(out, verb); err != nil {
+		fmt.Fprintf(eout, "ERROR: %s\n", err)
+		os.Exit(1)
 	}
 }
 

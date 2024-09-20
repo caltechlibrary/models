@@ -8,6 +8,11 @@ import (
 	"sort"
 )
 
+// RenderFunc is a function thation takes an io.Writer and Model then
+// renders the model into the io.Writer. It is used to extend the Model to
+// support various output formats.
+type RenderFunc func(io.Writer, *Model) error
+
 // Model implements a data structure description inspired by GitHub YAML issue template syntax.
 // See <https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms>
 //
@@ -36,6 +41,11 @@ type Model struct {
 
 	// isChanged is an internal state used by the modeler to know when a model has changed
 	isChanged bool `json:"-" yaml:"-"`
+
+	// renderer is a map of names to RenderFunc functions. A RenderFunc is that take a io.Writer and the model object as parameters then
+	// return an error type.  This allows for many renderers to be used with Model by 
+	// registering the function then envoking render with the name registered.
+	renderer map[string]RenderFunc `json:"-" yaml:"-"`
 }
 
 // HasChanges checks if the model's elements have changed
@@ -55,6 +65,16 @@ func (model *Model) HasChanges() bool {
 func (model *Model) HasElement(elementId string) bool {
 	for _, e := range model.Elements {
 		if e.Id == elementId {
+			return true
+		}
+	}
+	return false
+}
+
+// HasElementType checks if an element type matches given type.
+func (model *Model) HasElementType(elementType string) bool {
+	for _, e := range model.Elements {
+		if strings.ToLower(e.Type) == strings.ToLower(elementType) {
 			return true
 		}
 	}
@@ -320,6 +340,25 @@ func (model *Model) ToSQLiteScheme(out io.Writer) error {
 func (model *Model) ToHTML(out io.Writer) error {
 	return ModelToHTML(out, model)
 }
+
+// Register takes a name (string) and a RenderFunc and registers it with the model.
+// Registered names then can be invoke by the register name.
+func (model *Model) Register(name string, fn RenderFunc) {
+	if model.renderer == nil {
+		model.renderer = map[string]RenderFunc{}
+	}
+	model.renderer[name] = fn
+}
+
+// Render takes a register render io.Writer and register name envoking the function
+// with the model.
+func (model *Model) Render(out io.Writer, name string) error {
+	if fn, ok := model.renderer[name]; ok {
+		return fn(out, model)
+	}
+	return fmt.Errorf("%s is not a registered rendering function", name)
+}
+
 
 // getAttributeIds returns a list of attribue keys in a maps[string]interface{} structure
 func getAttributeIds(m map[string]string) []string {
