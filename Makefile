@@ -15,7 +15,7 @@ MAN_PAGES = modelgen.1
 
 MAN_PAGES_MISC = model.5
 
-VERSION = $(shell grep '"version":' codemeta.json | cut -d\"  -f 4)
+VERSION = $(shell jq -r ".version" codemeta.json | cut -d\"  -f 4)
 
 BRANCH = $(shell git branch | grep '* ' | cut -d\  -f 2)
 
@@ -191,7 +191,7 @@ update_version:
 	$(EDITOR) codemeta.json
 	codemeta2cff
 
-release: .FORCE clean build version.go CITATION.cff man distribute_docs dist/Linux-x86_64 dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 dist/Linux-aarch64 dist/Linux-armv7l
+release: clean build distribute_docs dist/Linux-x86_64 dist/Windows-x86_64 dist/Windows-arm64 dist/macOS-x86_64 dist/macOS-arm64 dist/Linux-aarch64 dist/Linux-armv7l
 
 status:
 	git status
