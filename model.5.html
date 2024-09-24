@@ -55,7 +55,7 @@ comment in the SQLite3 SQL. This is a text string or block.
 </dd>
 <dt>elements</dt>
 <dd>
-This is a listof elements that describe the data attritubes of your
+This is a list of elements that describe the data attributes of your
 model.
 </dd>
 </dl>
@@ -75,9 +75,9 @@ role="doc-noteref"><sup>1</sup></a>.
 <dd>
 (optional) This is the element’s identifier. It should be unique with in
 the model. While optional it is used to retrieve an element from a
-model. If is also required when rendering colum definitions in SQLite 3.
-A model that includes a submit or reset button would examples of when to
-leave it blank.
+model. If is also required when rendering column definitions in SQLite
+3. A model that includes a submit or reset button would examples of when
+to leave it blank.
 </dd>
 <dt>attributes</dt>
 <dd>
@@ -112,6 +112,73 @@ to retrieve the modeled object.
 rendering a web form.
 </dd>
 </dl>
+<h2 id="data-type-support-in-models-package">Data type support in models
+package</h2>
+<p>The models package starts from the premise of supporting a YAML
+description of a web form that then can be used to render HTML and SQL
+Schema. It also needs to be able to be a thin layer in a Go API that can
+validate the elements of a model just like they are validated browser
+side by the <a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input">HTML5
+input types</a>. The following are all implemented by the models package
+using a naive validation approach<a href="#fn3" class="footnote-ref"
+id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
+<ul>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/button">button</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox">checkbox</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/color">color</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date">date</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local">datetime-local</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email">email</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/hidden">hidden</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/image">image</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/month">month</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number">number</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/password">password</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio">radio</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range">range</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/reset">reset</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/search">search</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/submit">submit</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/tel">tel</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/text">text</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/time">time</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/url">url</a></li>
+<li><a
+href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week">week</a></li>
+</ul>
+<p>Additional data types<a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a> can be defined by using the
+<code>Model.Define</code> function provided in this package. You need to
+provide a name for the new type as well as the func’s name. The
+“defined” data types are applied before the default types. This allows
+for improvements to the defaults while retaining a fallback. Hopefully
+this mechanism can prove useful to expanding the data types supported by
+models.</p>
+<p>NOTE: As the models package evolves the validation methods provided
+out of the box will evolve too. Some may even be dropped if they prove
+problematic<a href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a>.</p>
 <h1 id="example">Example</h1>
 <p>This is an example model of a guest book entry used in a Dataset base
 guest book web application.</p>
@@ -155,6 +222,16 @@ href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern"
 class="uri">https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern</a>
 for details of how patterns are used in validation.<a href="#fnref2"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>“naive” in this case means overly simplistic validation,
+e.g. min max ranges don’t validate against step attributes.<a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The validation function is used server side only because
+it is written in Go. E.g. by Dataset’s JSON API.<a href="#fnref4"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>E.g. “week” input type is not widely used and is poorly
+supported by browsers in 2024. “image” doesn’t make a whole lot of
+sense.<a href="#fnref5" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </section>

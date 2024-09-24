@@ -1,4 +1,4 @@
-%models(5) user manual | version 0.0.0 b53cae9
+%models(5) user manual | version 0.0.1 14f6d2f
 % R. S. Doiel
 % 2024-09-20
 
@@ -33,7 +33,7 @@ description
 : This is simple description of the model. It will be included as a comment in the SQLite3 SQL. This is a text string or block.
 
 elements
-: This is a listof elements that describe the data attritubes of your model.
+: This is a list of elements that describe the data attributes of your model.
 
 ## Elements
 
@@ -47,7 +47,7 @@ type
 
 id
 : (optional) This is the element's identifier. It should be unique with in the model. While optional it is used to retrieve an element from a model. If is
-also required when rendering colum definitions in SQLite 3. A model that includes a submit or reset button would examples of when to leave it blank.
+also required when rendering column definitions in SQLite 3. A model that includes a submit or reset button would examples of when to leave it blank.
 
 attributes
 : (optional) This is a list of key/value pairs that map to HTML5 input elements. Boolean HTML element attributes like "required" and "checked" you are expressed
@@ -64,6 +64,47 @@ is\_primary\_id
 
 label
 : (optional) If set it is used as the text content of the label when rendering a web form.
+
+[^1]: See <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input> for details.
+
+[^2]: See <https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern> for details of how patterns are used in validation.
+
+## Data type support in models package
+
+The models package starts from the premise of supporting a YAML description of a web form that then can be used to render HTML and SQL Schema. It also needs to be able to be a thin layer in a Go API that can validate the elements of a model just like they are validated browser side by the [HTML5 input types](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input).  The following are all implemented by the models package using a naive validation approach[^3].  
+
+[^3]: "naive" in this case means overly simplistic validation, e.g. min max ranges don't validate against step attributes. 
+
+
+- [button](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/button)
+- [checkbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox)
+- [color](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/color)
+- [date](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date)
+- [datetime-local](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local)
+- [email](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email)
+- [hidden](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/hidden)
+- [image](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/image)
+- [month](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/month)
+- [number](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number)
+- [password](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/password)
+- [radio](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio)
+- [range](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range)
+- [reset](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/reset)
+- [search](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/search)
+- [submit](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/submit)
+- [tel](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/tel)
+- [text](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/text)
+- [time](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/time)
+- [url](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/url)
+- [week](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week)
+
+Additional data types[^4] can be defined by using the `Model.Define` function provided in this package. You need to provide a name for the new type as well as the func's name. The "defined" data types are applied before the default types. This allows for improvements to the defaults while retaining a fallback. Hopefully this mechanism can prove useful to expanding the data types supported by models.
+
+[^4]: The validation function is used server side only because it is written in Go. E.g. by Dataset's JSON API.
+
+NOTE: As the models package evolves the validation methods provided out of the box will evolve too. Some may even be dropped if they prove problematic[^5].
+
+[^5]: E.g. "week" input type is not widely used and is poorly supported by browsers in 2024. "image" doesn't make a whole lot of sense.
 
 # Example
 
@@ -101,9 +142,7 @@ elements:
 
 
 
-[^1]: See <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input> for details.
 
-[^2]: See <https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern> for details of how patterns are used in validation.
 
 
 

@@ -13,6 +13,10 @@ import (
 // support various output formats.
 type RenderFunc func(io.Writer, *Model) error
 
+// ValidateFunc is a function that validates form assocaited with the Element and the string value
+// received in the web form (value before converting to Go type).
+type ValidateFunc func(*Element,string) bool 
+
 // Model implements a data structure description inspired by GitHub YAML issue template syntax.
 // See <https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms>
 //
@@ -46,6 +50,27 @@ type Model struct {
 	// return an error type.  This allows for many renderers to be used with Model by 
 	// registering the function then envoking render with the name registered.
 	renderer map[string]RenderFunc `json:"-" yaml:"-"`
+
+	// validators holds a list of validate function associated with types. Key is type name.
+	validators map[string]ValidateFunc `json:"-" yaml:"-"`
+}
+
+// Validate form data expressed as map[string]string.
+func (model *Model) Validate(formData map[string]string) bool {
+	for k, v := range formData {
+		if elem, ok := model.GetElementById(k); ok {
+			if validator, ok := model.validators[elem.Type]; ok {
+				if ! validator(elem, v) {
+					return false
+				}
+			} else {
+				return DefaultValidator(elem, v)
+			}
+		} else {
+			return false
+		}
+	}
+	return true
 }
 
 // HasChanges checks if the model's elements have changed
@@ -122,6 +147,7 @@ func (m *Model) GetElementById(id string) (*Element, bool) {
 	}
 	return nil, false
 }
+
 
 // Element implementes the GitHub YAML issue template syntax for an input element.
 // The input element YAML is described at <https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema>
@@ -374,7 +400,6 @@ func (model *Model) Render(out io.Writer, name string) error {
 	return fmt.Errorf("%s is not a registered rendering function", name)
 }
 
-
 // getAttributeIds returns a list of attribue keys in a maps[string]interface{} structure
 func getAttributeIds(m map[string]string) []string {
         ids := []string{}
@@ -389,4 +414,11 @@ func getAttributeIds(m map[string]string) []string {
         return ids
 }
 
+// Define takes a model and attaches a validator based on Element type
+func (model *Model) Define(typeName string, validateFn ValidateFunc) {
+	if model.validators == nil {
+		model.validators = map[string]ValidateFunc{}
+	}
+	model.validators[typeName] = validateFn
+}
 

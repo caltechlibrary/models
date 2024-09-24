@@ -30,3 +30,4 @@ dist/
 bin/
 man/
 _codemeta.json
+*.bak

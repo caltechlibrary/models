@@ -46,7 +46,7 @@
         "GNU Make",
         "Pandoc >= 3.1"
     ],
-    "version": "0.0.1",
+    "version": "0.0.2",
     "developmentStatus": "concept",
     "issueTracker": "https://github.com/caltehclibrary/models/isues"
 }
