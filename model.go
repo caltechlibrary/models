@@ -64,7 +64,7 @@ func (model *Model) Validate(formData map[string]string) bool {
 					return false
 				}
 			} else {
-				return DefaultValidator(elem, v)
+				return false
 			}
 		} else {
 			return false

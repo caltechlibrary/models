@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/mail"
 	"net/url"
 	"strconv"
@@ -16,6 +15,8 @@ import (
 	"github.com/nyaruka/phonenumbers"
 )
 
+// ModelToHTML takes a model and renders an input form. The form is not
+// populated with values through that could be done easily via JavaScript and DOM calls.
 func ModelToHTML(out io.Writer, model *Model) error {
 	// FIXME: Handle title if it exists
 	// Write opening form element
@@ -50,6 +51,7 @@ func ModelToHTML(out io.Writer, model *Model) error {
 	return nil
 }
 
+// ElementToHTML renders an individual element as HTML, includes label as well as input element.
 func ElementToHTML(out io.Writer, cssBaseClass string, elem *Element) error {
 	cssClass := fmt.Sprintf("%s-%s", cssBaseClass, strings.ToLower(elem.Id))
 	fmt.Fprintf(out, "  <div class=%q>", cssClass)
@@ -286,63 +288,73 @@ func ValidateWeek(elem *Element, formValue string) bool {
 	return false
 }
 
+// ValidateCheckbox checks is the form value was provided, returns false if empty string recieved for value.
+func ValidateCheckbox(elem *Element, formValue string) bool {
+	// Checkbox return their string value if checked.
+	return strings.TrimSpace(formValue) != ""
+}
 
-// DefaultValidator implement basic HTML5 form element validation
-func DefaultValidator(elem *Element, formValue string) bool {
-	switch strings.ToLower(elem.Type) {
-	case "button":
-		// A button value can be empty or a string, so always returns true.
-		return true;
-	case "checkbox":
-		// Checkbox return their string value if checked.
-		return strings.TrimSpace(formValue) != ""
-	case "color":
-		return ValidateColor(elem, formValue)
-	case "date":
-		return ValidateDate(elem, formValue)
-	case "datetime-local":
-		return ValidateDateTimeLocal(elem, formValue)
-	case "email":
-		return ValidateEmailAddress(elem, formValue)
-	case "hidden":
-		return ValidateTextElement(elem, formValue)
-	case "image":
-		// The element value should be none, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/image#technical_summary
-		return formValue == ""
-	case "month":
-		return ValidateMonth(elem, formValue)
-	case "number":
-		return ValidateNumber(elem, formValue)
-	case "password":
-		// Passwords must be a single line of text, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/password
-		if strings.Index(formValue, "\r") > -1 || strings.Index(formValue, "\n") > -1 {
-			return false
-		}
-		return ValidateTextElement(elem, formValue)
-	case "radio":
-		// Checkbox return their string value if checked.
-		return strings.TrimSpace(formValue) != ""
-	case "range":
-		return ValidateRange(elem, formValue)
-	case "reset":
-		return true;
-	case "search":
-		return ValidateTextElement(elem, formValue)
-	case "submit":
-		return true;
-	case "tel":
-		return ValidateTel(elem, formValue)	
-	case "text":
-		return ValidateTextElement(elem, formValue)
-	case "textarea":
-		return ValidateTextElement(elem, formValue)
-	case "time":
-		return ValidateTime(elem, formValue)
-	case "url":
-		return ValidateURL(elem, formValue)
-	case "week":
-		return ValidateWeek(elem, formValue)
+// ValidateImage, if value is empty string this returns true. 
+// NOTE: this func maybe depreciated as this is not a common form element
+func ValidateImage(elem *Element, formValue string) bool {
+	// The element value should be none, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/image#technical_summary
+	return formValue == ""
+}
+
+func ValidatePassword(elem *Element, formValue string) bool {
+	// Passwords must be a single line of text, see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/password
+	if strings.Index(formValue, "\r") > -1 || strings.Index(formValue, "\n") > -1 {
+		return false
 	}
-	log.Printf("DefaultValidator not implemented for %q with %q", elem.Type, formValue)
-	return false
+	return ValidateTextElement(elem, formValue)
+}
+
+func ValidateRadio(elem *Element, formValue string) bool {
+	// Checkbox return their string value if checked.
+	return strings.TrimSpace(formValue) != ""
+}
+
+func ValidateButton(elem *Element, formValue string) bool {
+	return true
+}
+
+func ValidateReset(elem *Element, formValue string) bool {
+	return true
+}
+
+func ValidateSubmit(elem *Element, formValue string) bool {
+	return true
+}
+
+func ValidateSearch(elem *Element, formValue string) bool {
+	return ValidateTextElement(elem, formValue)
+}
+
+func ValidateTextarea(elem *Element, formValue string) bool {
+	return ValidateTextElement(elem, formValue)
+}
+
+
+func SetDefaultTypes(model *Model) {
+	model.Define("button", ValidateButton)
+	model.Define("date", ValidateDate)
+    model.Define("datetime-local", ValidateDateTimeLocal)
+    model.Define("month", ValidateMonth)
+    model.Define("color", ValidateColor)
+    model.Define("email", ValidateEmailAddress)
+    model.Define("text", ValidateTextElement)
+    model.Define("number", ValidateNumber)
+    model.Define("range", ValidateRange)
+    model.Define("tel", ValidateTel)
+    model.Define("time", ValidateTime)
+    model.Define("url", ValidateURL)
+    model.Define("week", ValidateWeek)
+    model.Define("checkbox", ValidateCheckbox)
+    model.Define("image", ValidateImage)
+    model.Define("password", ValidatePassword)
+    model.Define("radio", ValidateRadio)
+    model.Define("reset", ValidateReset)
+    model.Define("submit", ValidateSubmit)
+    model.Define("search", ValidateSearch)
+    model.Define("textarea", ValidateTextarea)
 }

@@ -1,6 +1,6 @@
-%modelgen(1) user manual | version 0.0.1 14f6d2f
+%modelgen(1) user manual | version 0.0.2 7a6df8f
 % R. S. Doiel
-% 2024-09-23
+% 2024-09-24
 
 # NAME
 
