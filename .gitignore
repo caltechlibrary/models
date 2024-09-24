@@ -31,3 +31,6 @@ bin/
 man/
 _codemeta.json
 *.bak
+*.swp
+*.tmp
+*~
