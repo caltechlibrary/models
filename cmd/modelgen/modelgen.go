@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"github.com/caltechlibrary/models"
 
 	// 3rd Party Packges
+	"github.com/pkg/fileutils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -89,6 +91,23 @@ var (
 	showVersion bool
 )
 
+// getAnswer get a Y/N response from buffer
+func getAnswer(buf *bufio.Reader, defaultAnswer string, lower bool) string {
+	answer, err := buf.ReadString('\n')
+	if err != nil {
+		return ""
+	}
+	answer = strings.TrimSpace(answer)
+	if answer == "" {
+		answer = defaultAnswer
+	}
+	if lower {
+		return strings.ToLower(answer)
+	}
+	return answer
+}
+
+
 func main() {
 	appName := path.Base(os.Args[0])
 
@@ -132,30 +151,57 @@ func main() {
 		fName := args[1]
 		modelId := path.Base(fName)
 		modelId = strings.ToLower(strings.TrimSuffix(modelId, ".yaml"))
+		model, err := models.NewModel(modelId)
+		if err != nil {
+			fmt.Fprintf(eout, "ERROR: %s\n", err)
+			os.Exit(5)
+		}
+		// If file exists, make backup then load the contents into memory
+		backupFile := false
+		if _, err := os.Stat(fName); err == nil {
+			backupFile = true
+			src, err := os.ReadFile(fName)
+			if err != nil {
+				fmt.Fprintf(eout, "ERROR: %s\n", err)
+				os.Exit(2)
+			}
+			if err := yaml.Unmarshal(src, &model); err != nil {
+				fmt.Fprintf(eout, "ERROR: %s\n", err)
+				os.Exit(3)
+			}
+		}
 		// Decide if I'm going to create or open an existing YAML file.
 		fout, err := os.OpenFile(args[1], os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			fmt.Fprintf(eout, "ERROR: %s\n", err)
-			os.Exit(2)
+			os.Exit(4)
 		}
 		defer fout.Close()
 
-		model, err := models.NewModel(modelId)
-		if err != nil {
-			fmt.Fprintf(eout, "ERROR: %s\n", err)
-			os.Exit(3)
-		}
 		models.SetDefaultTypes(model)
 		model.Register("yaml", models.ModelToYAML)
 		if err := models.ModelInteractively(model); err != nil {
 			fmt.Fprintf(eout, "ERROR: %s\n", err)
-			os.Exit(4)
+			os.Exit(6)
 		}
-		if err := model.Render(fout, "yaml"); err != nil {
-			fmt.Fprintf(eout, "ERROR: %s\n", err)
-			os.Exit(5)
+		if model.HasChanges() {
+			buf := bufio.NewReader(in)
+			fmt.Fprintf(out, "Save %s (Y/n)?", fName)
+			answer := getAnswer(buf, "y", true)
+			if answer == "y" {
+				// backup file if needed
+				if backupFile {
+					if err := fileutils.CopyFile(fName + ".bak", fName) ; err != nil {
+						fmt.Fprintf(eout, "ERROR: %s\n", err)
+						os.Exit(7)
+					}
+				}
+				if err := model.Render(fout, "yaml"); err != nil {
+					fmt.Fprintf(eout, "ERROR: %s\n", err)
+					os.Exit(8)
+				}
+			}
 		}
-
 		os.Exit(0)
 	}
 

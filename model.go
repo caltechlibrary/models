@@ -43,7 +43,7 @@ type Model struct {
 	Elements []*Element `json:"elements,required" yaml:"elements,omitempty"`
 
 	// Title, A default title that will be pre-populated in the issue submission form.
-	// (optional)
+	// (optional) only there for compatibility with GitHub YAML Issue Templates
 	Title string `json:"title,omitempty" yaml:"title,omitempty"`
 
 	// isChanged is an internal state used by the modeler to know when a model has changed
@@ -274,19 +274,14 @@ func NewModel(modelId string) (*Model, error) {
 	model := new(Model)
 	model.Id = modelId
 	model.Description = fmt.Sprintf("... description of %q goes here ...", modelId)
-	model.Attributes = map[string]string{
-		"action": "",
-		"method": "",
-		"x-success": "",
-		"x-fail": "",
-	}
+	model.Attributes = map[string]string{}
 	model.Elements = []*Element{}
 	// Make the required element ...
 	element := new(Element)
 	element.Id = "id"
 	element.IsObjectId = true
 	element.Type = "text"
-	element.Attributes = map[string]string{"readonly": "true"}
+	element.Attributes = map[string]string{"required": "true"}
 	if err := model.InsertElement(0, element); err != nil {
 		return nil, err
 	}

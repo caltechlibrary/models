@@ -83,7 +83,7 @@ func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io
 			attributeList = append(attributeList, fmt.Sprintf("%s -> %q", k, v))
 		}
 		menu, opt := selectMenuItem(in, out,
-			fmt.Sprintf("Manage %s attributes", model.Id), TuiStandardMenu,
+			fmt.Sprintf("Manage %s attributes (none required)", model.Id), TuiStandardMenu,
 			attributeList, false, "", "", true)
 		if len(menu) > 0 {
 			menu = menu[0:1]
@@ -506,50 +506,81 @@ func modifyElementsTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer
 	return nil
 }
 
+func modifyModelMetadataTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer) error {
+	buf := bufio.NewReader(in)
+	for quit := false; !quit; {
+		menu, opt := selectMenuItem(in, out,
+				"Manage Model Metadata",
+			    "Menu [i]d, [d]escription or press enter when done",	
+			[]string{
+				fmt.Sprintf("id: %q", model.Id),
+				//fmt.Sprintf("title: %q", model.Title),
+				fmt.Sprintf("description: %q", model.Description),
+			},
+			false, "", "", true)
+
+		if len(menu) > 0 {
+             menu = menu[0:1]
+        }
+		switch menu {
+			case "i":
+				if opt == "" {
+					 fmt.Fprintf(out, `Enter id: `)
+                     opt = getAnswer(buf, "", false)
+				}
+				if opt != "" {
+					if opt != model.Id {
+						model.Id = opt
+						model.Changed(true)
+					}
+				}
+			/*
+			case "t":
+				if opt == "" {
+					 fmt.Fprintf(out, `Enter Title: `)
+                     opt = getAnswer(buf, "", false)
+				}
+				if opt != "" {
+					if opt != model.Title {
+						model.Title = opt
+						model.Changed(true)
+					}
+				}
+			*/
+			case "d":
+				if opt == "" {
+					 fmt.Fprintf(out, `Enter Description: `)
+                     opt = getAnswer(buf, "", false)
+				}
+				if opt != "" {
+					if opt != model.Description {
+						model.Description = opt
+						model.Changed(true)
+					}
+				}
+			case "q":
+				quit = true
+			default:
+				quit = true
+		}
+	}
+	return nil
+}
+
 func ModelInteractively(model *Model) error {
 	in := os.Stdin
 	out := os.Stdout
 	eout := os.Stderr
 
-	buf := bufio.NewReader(in)
-	// get model id
-	for {
-		fmt.Fprintf(os.Stdout, "Enter model id: ")
-		txt := getAnswer(buf, model.Id, false)
-		if txt != "" {
-			model.Id = txt
-		}
-		if model.Id != "" {
-			break
-		}
+	// Manage Model Metadata
+	if err := modifyModelMetadataTUI(model, in, out, eout); err != nil {
+		return err
 	}
-	// get title
-	for {
-		fmt.Fprintf(os.Stdout, "Enter model title: ")
-		txt := getAnswer(buf, "", false)
-		if txt != "" {
-			model.Title = txt
-		}
-		if model.Title != "" {
-			break
-		}
-	}
-	// get description
-	for {
-		fmt.Fprintf(os.Stdout, "Enter model description: ")
-		txt := getAnswer(buf, "", false)
-		if txt != "" {
-			model.Description = txt
-		}
-		if model.Description != "" {
-			break
-		}
-	}
-	// get attributes
+	// Manage Model Attributes
 	if err := modifyModelAttributesTUI(model, in, out, eout); err != nil {
 		return err
 	}
-	// loop to add and manage elements
+	// Manage Model Elements
 	if err := modifyElementsTUI(model, in, out, eout); err != nil {
 		return err
 	}

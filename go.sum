@@ -1,5 +1,7 @@
 github.com/nyaruka/phonenumbers v1.4.0 h1:ddhWiHnHCIX3n6ETDA58Zq5dkxkjlvgrDWM2OHHPCzU=
 github.com/nyaruka/phonenumbers v1.4.0/go.mod h1:gv+CtldaFz+G3vHHnasBSirAi3O2XLqZzVWz4V1pl2E=
+github.com/pkg/fileutils v0.0.0-20181114200823-d734b7f202ba h1:6N4YMhhXMxaJf8EzKZU9YcE3Q9J2H0rbhmmfvmDOx9E=
+github.com/pkg/fileutils v0.0.0-20181114200823-d734b7f202ba/go.mod h1:Wr30770SHCR9V2+WsPUyQ/O8mM3KpOZKo3bZEjhCdok=
 golang.org/x/text v0.15.0 h1:h1V/4gjBv8v9cjcR6+AR5+/cIYK5N/WAgiv4xlsEtAk=
 golang.org/x/text v0.15.0/go.mod h1:18ZOQIKpY8NJVqYksKHtTdi31H5itFRjB5/qKTNYzSU=
 google.golang.org/protobuf v1.34.1 h1:9ddQBjfCyZPOHPUiPxpYESBLc+T8P3E+Vo4IbKZgFWg=
