@@ -13,6 +13,9 @@ import (
 // support various output formats.
 type RenderFunc func(io.Writer, *Model) error
 
+// GenElementFunc is a function which will generate an Element configured represent a model's supported "types"
+type GenElementFunc func() *Element
+
 // ValidateFunc is a function that validates form assocaited with the Element and the string value
 // received in the web form (value before converting to Go type).
 type ValidateFunc func(*Element,string) bool 
@@ -51,8 +54,19 @@ type Model struct {
 	// registering the function then envoking render with the name registered.
 	renderer map[string]RenderFunc `json:"-" yaml:"-"`
 
+	// genElements holds a map to the "type" pointing to an element generator
+	genElements map[string]GenElementFunc `json:"-" yaml:"-"`
+
 	// validators holds a list of validate function associated with types. Key is type name.
 	validators map[string]ValidateFunc `json:"-" yaml:"-"`
+}
+
+// GenElementType takes an element type and returns an Element struct populated for that type and true or nil and false if type is not supported.
+func (model *Model) GenElementType(typeName string) (*Element, bool) {
+	if fn, ok := model.genElements[typeName]; ok {
+		return fn(), true
+	}
+	return nil, false
 }
 
 // Validate form data expressed as map[string]string.
@@ -260,10 +274,16 @@ func NewModel(modelId string) (*Model, error) {
 	model := new(Model)
 	model.Id = modelId
 	model.Description = fmt.Sprintf("... description of %q goes here ...", modelId)
+	model.Attributes = map[string]string{
+		"action": "",
+		"method": "",
+		"x-success": "",
+		"x-fail": "",
+	}
 	model.Elements = []*Element{}
 	// Make the required element ...
 	element := new(Element)
-	element.Id = "identifier"
+	element.Id = "id"
 	element.IsObjectId = true
 	element.Type = "text"
 	element.Attributes = map[string]string{"readonly": "true"}
@@ -382,6 +402,12 @@ func (model *Model) ToHTML(out io.Writer) error {
 	return ModelToHTML(out, model)
 }
 
+// ModelInteractively takes a model and interactively prompts to create
+// a YAML model file.
+func (model *Model) ModelToYAML(out io.Writer) error {
+	return ModelToYAML(out, model)
+}
+
 // Register takes a name (string) and a RenderFunc and registers it with the model.
 // Registered names then can be invoke by the register name.
 func (model *Model) Register(name string, fn RenderFunc) {
@@ -400,6 +426,18 @@ func (model *Model) Render(out io.Writer, name string) error {
 	return fmt.Errorf("%s is not a registered rendering function", name)
 }
 
+
+// IsSupportedElementType checks if the element type is supported by Newt, returns true if OK false is it is not
+func (model *Model) IsSupportedElementType(eType string) bool {
+	for sType, _ := range model.genElements {
+		if eType == sType {
+			return true
+		}
+	}
+	return false
+}
+
+
 // getAttributeIds returns a list of attribue keys in a maps[string]interface{} structure
 func getAttributeIds(m map[string]string) []string {
         ids := []string{}
@@ -414,8 +452,12 @@ func getAttributeIds(m map[string]string) []string {
         return ids
 }
 
-// Define takes a model and attaches a validator based on Element type
-func (model *Model) Define(typeName string, validateFn ValidateFunc) {
+// Define takes a model and attaches a type definition (an element generator) and validator for the named type
+func (model *Model) Define(typeName string, genElementFn GenElementFunc, validateFn ValidateFunc) {
+	if model.genElements == nil {
+		model.genElements = map[string]GenElementFunc{}
+	}
+	model.genElements[typeName] = genElementFn
 	if model.validators == nil {
 		model.validators = map[string]ValidateFunc{}
 	}

@@ -26,7 +26,7 @@ const (
 
 # SYNOPSIS
 
-{app_name} [OPTIONS] html|sqlite [MODEL_NAME] [OUT_NAME]
+{app_name} [OPTIONS] ACTION [MODEL_NAME] [OUT_NAME]
 
 # DESCRIPTION
 
@@ -39,6 +39,22 @@ then the model is read from standard input.
 
 OUT_NAME is the name of the file to write. If it is loft off then
 then standard out is used.
+
+# ACTION
+
+An action can be "model", "html" or "sqlite". Actions result in a file or
+content generation rendering a model.
+
+model MODEL_NAME
+: This action is an interactive modeler. It generates YAML file holding
+the model.  MODEL_NAME is required is used as the filename for the model.
+
+html
+: This action will render a YAML model as HTML. If no MODEL_NAME is provided
+then the YAML is read from standard input.
+
+sqlite
+: This action will render a SQL file suitable for use with SQLite 3.
 
 # OPTIONS
 
@@ -53,7 +69,12 @@ then standard out is used.
 
 # EXAMPLE
 
+In this example we create a new model YAML file interactively using
+the "model" action. Then create an HTML page followed by SQL file
+holding the SQL schema for SQLite 3.
+
 ~~~
+{app_name} model guestbook.yaml
 {app_name} html guestbook.yaml guestbook.html
 {app_name} sqlite guestbook.yaml guestbook.sql
 ~~~
@@ -101,6 +122,42 @@ func main() {
 		fmt.Fprintf(eout, "%s\n", models.FmtHelp(helpText, appName, models.Version, models.ReleaseDate, models.ReleaseHash))
 		os.Exit(1)
 	}
+	// Now transform the model.
+	verb := strings.ToLower(args[0])
+	if verb == "model" {
+		if len(args) < 2 {
+			fmt.Fprintf(eout, "ERROR: must provide a name for the YAML model file")
+			os.Exit(1)
+		}
+		fName := args[1]
+		modelId := path.Base(fName)
+		modelId = strings.ToLower(strings.TrimSuffix(modelId, ".yaml"))
+		// Decide if I'm going to create or open an existing YAML file.
+		fout, err := os.OpenFile(args[1], os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			fmt.Fprintf(eout, "ERROR: %s\n", err)
+			os.Exit(2)
+		}
+		defer fout.Close()
+
+		model, err := models.NewModel(modelId)
+		if err != nil {
+			fmt.Fprintf(eout, "ERROR: %s\n", err)
+			os.Exit(3)
+		}
+		models.SetDefaultTypes(model)
+		model.Register("yaml", models.ModelToYAML)
+		if err := models.ModelInteractively(model); err != nil {
+			fmt.Fprintf(eout, "ERROR: %s\n", err)
+			os.Exit(4)
+		}
+		if err := model.Render(fout, "yaml"); err != nil {
+			fmt.Fprintf(eout, "ERROR: %s\n", err)
+			os.Exit(5)
+		}
+
+		os.Exit(0)
+	}
 
 	if len(args) > 1 {
 		in, err = os.Open(args[1])
@@ -129,18 +186,15 @@ func main() {
 		fmt.Fprintf(eout, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
-	if ! model.Check(eout) {
+	if !model.Check(eout) {
 		fmt.Fprintf(eout, "ERROR: problem with model")
 		os.Exit(1)
 	}
 	model.Register("html", models.ModelToHTML)
 	model.Register("sqlite", models.ModelToSQLiteScheme)
 	model.Register("sqlite3", models.ModelToSQLiteScheme)
-    // Now transform the model.	
-	verb := strings.ToLower(args[0])
 	if err := model.Render(out, verb); err != nil {
 		fmt.Fprintf(eout, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
 }
-
