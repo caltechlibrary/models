@@ -14,7 +14,7 @@ repository-code: "https://github.com/caltechlibary/models"
 version: 0.0.2
 license-url: "https://spdx.org/licenses/BSD-3-Clause"
 keywords: [ "metadata" ]
-date-released: 2024-09-20
+date-released: 2024-09-26
 ---
 
 About this software

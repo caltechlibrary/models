@@ -16,8 +16,11 @@
     ],
     "codeRepository": "https://github.com/caltechlibary/models",
     "dateCreated": "2024-09-20",
-    "dateModified": "2024-09-20",
-    "datePublished": "2024-09-20",
+    "dateModified": "2024-09-27",
+    "datePublished": "2024-09-27",
+	"releaseNotes": "Refined interactive modeler",
+    "version": "0.0.3",
+    "developmentStatus": "concept",
     "description": "A Go package for working with simple data models inspired by HTML5 web forms.",
     "downloadUrl": "https://github.com/caltechlibrary/models/releases",
     "funder": {
@@ -46,7 +49,5 @@
         "GNU Make",
         "Pandoc >= 3.1"
     ],
-    "version": "0.0.2",
-    "developmentStatus": "concept",
     "issueTracker": "https://github.com/caltehclibrary/models/isues"
 }

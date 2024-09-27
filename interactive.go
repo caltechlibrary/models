@@ -1,10 +1,10 @@
 package models
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -12,12 +12,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// ModelToYAML renders a Model struct as YAML
 func ModelToYAML(out io.Writer, model *Model) error {
-	src, err := yaml.Marshal(model)
-	if err != nil {
+	encoder := yaml.NewEncoder(out)
+	encoder.SetIndent(2)
+	if err := encoder.Encode(model); err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "%s", src)
 	return nil
 }
 
@@ -43,11 +44,11 @@ func removeElement(model *Model, in io.Reader, out io.Writer, eout io.Writer, el
 // e.g. DATE -> date,""
 //
 //	eMail -> email, ""
-//	ORCID -> orcid, "[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9A-Z]"
+//	ORCID -> orcid, "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]"
 func normalizeInputType(inputType string) (string, string) {
 	patternMap := map[string]string{
 		// This is where we put the aliases to common regexp validated patterns
-		"orcid": "[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9A-Z]",
+		"orcid": "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]",
 	}
 	val := strings.TrimSpace(strings.ToLower(inputType))
 	if pattern, ok := patternMap[val]; ok {
@@ -73,7 +74,7 @@ func addElementStub(model *Model, elementId string) ([]string, error) {
 
 // modifyModelAttributesTUI provides a text UI for managing a model's attributes
 func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer) error {
-	buf := bufio.NewReader(in)
+	prompt := NewPrompt(in, out, eout)
 	if model.Attributes == nil {
 		model.Attributes = map[string]string{}
 	}
@@ -82,9 +83,10 @@ func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io
 		for k, v := range model.Attributes {
 			attributeList = append(attributeList, fmt.Sprintf("%s -> %q", k, v))
 		}
-		menu, opt := selectMenuItem(in, out,
-			fmt.Sprintf("Manage %s attributes (none required)", model.Id), TuiStandardMenu,
-			attributeList, false, "", "", true)
+		menu, opt := prompt.SelectMenu(
+			fmt.Sprintf("Manage %s attributes (none required)", model.Id),
+			"Choices [a]dd, [m]odify, [r]emove or press enter when done",
+			attributeList, "", "", true)
 		if len(menu) > 0 {
 			menu = menu[0:1]
 		}
@@ -94,7 +96,7 @@ func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io
 		case "a":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter attribute name: ")
-				opt = getAnswer(buf, "", true)
+				opt = prompt.GetAnswer("", true)
 			}
 			if !IsValidVarname(opt) {
 				fmt.Fprintf(eout, "%q is not a valid attribute name\n", opt)
@@ -105,10 +107,10 @@ func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io
 		case "m":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter attribute name: ")
-				opt = getAnswer(buf, "", true)
+				opt = prompt.GetAnswer("", true)
 			}
 			fmt.Fprintf(out, "Enter %s's value: ", opt)
-			val := getAnswer(buf, "", false)
+			val := prompt.GetAnswer("", false)
 			if val != "" {
 				model.Attributes[opt] = val
 				model.Changed(true)
@@ -116,7 +118,7 @@ func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io
 		case "r":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter attribute name to remove: ")
-				opt = getAnswer(buf, "", true)
+				opt = prompt.GetAnswer("", true)
 				opt, ok = getIdFromList(attributeList, opt)
 			}
 			if ok {
@@ -141,7 +143,7 @@ func modifyModelAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io
 
 // modifyElementAttributesTUI provides a text UI for managing a model's element's attributes
 func modifyElementAttributesTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer, elementId string) error {
-	buf := bufio.NewReader(in)
+	prompt := NewPrompt(in, out, eout)
 	elem, _ := model.GetElementById(elementId)
 	for quit := false; !quit; {
 		var ok bool
@@ -149,32 +151,41 @@ func modifyElementAttributesTUI(model *Model, in io.Reader, out io.Writer, eout 
 		for k, v := range elem.Attributes {
 			attributeList = append(attributeList, fmt.Sprintf("%s -> %q", k, v))
 		}
-		menu, opt := selectMenuItem(in, out,
-			fmt.Sprintf("Manage %s.%s attributes", model.Id, elementId), TuiStandardMenu,
-			attributeList, true, "", "", true)
+		val := ""
+		menu, opt := prompt.SelectMenu(
+			fmt.Sprintf("Modify element %s.%s attributes", model.Id, elementId),
+			"Choices [a]dd, [m]odify, [r]emove or press enter when done",
+			attributeList, "", "", true)
 		if len(menu) > 0 {
 			menu = menu[0:1]
 		}
+		if i := strings.Index(opt, " "); i >= 0  {
+			opt, val = opt[0:i], opt[i+1:]
+		}
+		//fmt.Printf("DEBUG menu -> %q, opt -> %q, val -> %q\n",menu, opt, val)
 		opt, ok = getIdFromList(attributeList, opt)
+		//fmt.Printf("DEBUG opt, ok -> %q, %t, val -> %q\n",opt, ok, val)
 		switch menu {
 		case "a":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter attribute name: ")
-				opt = getAnswer(buf, "", true)
+				opt = prompt.GetAnswer("", true)
 			}
 			if !IsValidVarname(opt) {
 				fmt.Fprintf(eout, "%q is not a valid attribute name\n", opt)
 			} else {
-				elem.Attributes[opt] = ""
+				elem.Attributes[opt] = val
 				elem.Changed(true)
 			}
 		case "m":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter attribute name: ")
-				opt = getAnswer(buf, "", true)
+				opt = prompt.GetAnswer("", true)
 			}
-			fmt.Fprintf(out, "Enter %s's value: ", opt)
-			val := getAnswer(buf, "", false)
+			if val == "" {
+				fmt.Fprintf(out, "Enter %s's value: ", opt)
+				val = prompt.GetAnswer("", false)
+			}
 			if val != "" {
 				elem.Attributes[opt] = val
 				elem.Changed(true)
@@ -182,7 +193,7 @@ func modifyElementAttributesTUI(model *Model, in io.Reader, out io.Writer, eout 
 		case "r":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter attribute name to remove: ")
-				opt = getAnswer(buf, "", true)
+				opt = prompt.GetAnswer("", true)
 				opt, ok = getIdFromList(attributeList, opt)
 			}
 			if ok {
@@ -206,17 +217,17 @@ func modifyElementAttributesTUI(model *Model, in io.Reader, out io.Writer, eout 
 }
 
 func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.Writer, modelId string) error {
-	buf := bufio.NewReader(in)
+	prompt := NewPrompt(in, out, eout)
 	if elem.Options == nil {
 		elem.Options = []map[string]string{}
 	}
 	for quit := false; !quit; {
 		optionsList := getValueLabelList(elem.Options)
-		menu, opt := selectMenuItem(in, out,
+		menu, opt := prompt.SelectMenu(
 			fmt.Sprintf("Manage %s.%s options", modelId, elem.Id),
-			"Menu [a]dd, [m]odify option no., [r]emove option no. or press enter when done",
+			"Choices [a]dd, [m]odify, [r]emove or press enter when done",
 			optionsList,
-			true, "", "", true)
+			"", "", true)
 		if len(menu) > 0 {
 			menu = menu[0:1]
 		}
@@ -228,7 +239,7 @@ func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.
 		case "a":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter an option value: ")
-				val = getAnswer(buf, "", true)
+				val = prompt.GetAnswer("", true)
 			} else {
 				val = strings.TrimSpace(opt)
 			}
@@ -236,7 +247,7 @@ func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.
 				fmt.Fprintf(eout, "Error, an option value required\n")
 			} else {
 				fmt.Fprintf(out, "Enter an option label: ")
-				label = getAnswer(buf, "", false)
+				label = prompt.GetAnswer("", false)
 				if label == "" {
 					label = val
 				}
@@ -256,14 +267,14 @@ func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.
 			}
 			if !ok {
 				fmt.Fprintf(out, "Enter option number: ")
-				pos, ok = getDigit(buf, optionsList)
+				pos, ok = prompt.GetDigit(optionsList)
 
 			}
 			if ok {
 				option := elem.Options[pos]
 				val, label, _ := getValAndLabel(option)
 				fmt.Fprintf(out, "Enter an option label (for %q): ", val)
-				answer := getAnswer(buf, "", false)
+				answer := prompt.GetAnswer("", false)
 				if answer != "" {
 					label = answer
 				}
@@ -288,7 +299,7 @@ func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.
 				}
 			} else {
 				fmt.Fprintf(out, "Enter option number: ")
-				pos, ok = getDigit(buf, optionsList)
+				pos, ok = prompt.GetDigit(optionsList)
 			}
 			if ok {
 				elem.Options = append(elem.Options[0:pos], elem.Options[(pos+1):]...)
@@ -308,7 +319,7 @@ func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.
 }
 
 func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer, elementId string) error {
-	buf := bufio.NewReader(in)
+	prompt := NewPrompt(in, out, eout)
 	elem, ok := model.GetElementById(elementId)
 	if !ok {
 		return fmt.Errorf("could not find %q element", elementId)
@@ -322,41 +333,41 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 		switch elem.Type {
 		case "select":
 			optionsList := getValueLabelList(elem.Options)
-			menu, opt = selectMenuItem(in, out,
-				fmt.Sprintf("Manage %s.%s element", model.Id, elementId),
-				"Menu [t]ype, [l]abel, [a]ttributes, [o]ptions or press enter when done",
+			menu, opt = prompt.SelectMenu(
+				fmt.Sprintf("Modify element %s.%s", model.Id, elementId),
+				"Choices [t]ype, [l]abel, [a]ttributes, [o]ptions or press enter when done",
 				[]string{
 					fmt.Sprintf("id %s", elementId),
 					fmt.Sprintf("type %s", elem.Type),
 					fmt.Sprintf("label %s", elem.Label),
-					fmt.Sprintf("attributes %s", strings.Join(attributeList, ",\n\t\t")),
-					fmt.Sprintf("options %s", strings.Join(optionsList, ",\n\t\t")),
+					fmt.Sprintf("attributes:\n\t\t%s", strings.Join(attributeList, ",\n\t\t")),
+					fmt.Sprintf("options:\n\t\t%s", strings.Join(optionsList, ",\n\t\t")),
 				},
-				false, "", "", true)
+				"", "", true)
 		case "textarea":
-			menu, opt = selectMenuItem(in, out,
-				fmt.Sprintf("Manage %s.%s element", model.Id, elementId),
-				"Menu [t]ype, [l]abel, [a]ttributes or press enter when done",
+			menu, opt = prompt.SelectMenu(
+				fmt.Sprintf("Modify element %s.%s", model.Id, elementId),
+				"Choices [t]ype, [l]abel, [a]ttributes or press enter when done",
 				[]string{
 					fmt.Sprintf("id %s", elementId),
 					fmt.Sprintf("type %s", elem.Type),
 					fmt.Sprintf("label %s", elem.Label),
-					fmt.Sprintf("attributes %s", strings.Join(attributeList, ",\n\t\t")),
+					fmt.Sprintf("attributes:\n\t\t%s", strings.Join(attributeList, ",\n\t\t")),
 				},
-				false, "", "", true)
+				"", "", true)
 		default:
-			menu, opt = selectMenuItem(in, out,
+			menu, opt = prompt.SelectMenu(
 				fmt.Sprintf("Manage %s.%s element", model.Id, elementId),
-				"Menu [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done",
+				"Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done",
 				[]string{
 					fmt.Sprintf("id %s", elementId),
 					fmt.Sprintf("type %s", elem.Type),
 					fmt.Sprintf("label %s", elem.Label),
 					fmt.Sprintf("pattern %s", elem.Pattern),
-					fmt.Sprintf("attributes %s", strings.Join(attributeList, ",\n\t\t")),
+					fmt.Sprintf("attributes:\n\t\t%s", strings.Join(attributeList, ",\n\t\t")),
 					fmt.Sprintf("object identifier? %t", elem.IsObjectId),
 				},
-				false, "", "", true)
+				"", "", true)
 		}
 		if len(menu) > 0 {
 			menu = menu[0:1]
@@ -365,7 +376,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 		case "t":
 			if opt == "" {
 				fmt.Fprintf(out, `Enter type string (e.g. text, email, date, textarea, select, orcid): `)
-				opt = getAnswer(buf, "", false)
+				opt = prompt.GetAnswer("", false)
 			}
 			if opt != "" {
 				eType := strings.TrimSpace(opt)
@@ -385,7 +396,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 		case "p":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter the regexp to use: ")
-				opt = getAnswer(buf, "", false)
+				opt = prompt.GetAnswer("", false)
 			}
 			// FIXME: how do I clear a pattern if I nolonger want to use one?
 			if opt != "" {
@@ -400,7 +411,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 		case "l":
 			if opt == "" {
 				fmt.Fprintf(out, "Enter a label: ")
-				opt = getAnswer(buf, "", false)
+				opt = prompt.GetAnswer("", false)
 			}
 			if opt != "" {
 				// NOTE: remove a pattern by having it match everything, i.e. astrix
@@ -450,13 +461,15 @@ func modifyElementsTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer
 		err    error
 		answer string
 	)
-	buf := bufio.NewReader(in)
+	prompt := NewPrompt(in, out, eout)
 	// FIXME: Need to support editing model attributes, then allow for modifying model's body to be modified.
 	for quit := false; !quit; {
 		elementList := model.GetElementIds()
-		menu, opt := selectMenuItem(in, out,
-			fmt.Sprintf("Manage %s elements", model.Id), TuiStandardMenu,
-			elementList, true, "", "", true)
+		menu, opt := prompt.SelectMenu(
+			fmt.Sprintf("Manage %s elements", model.Id),
+			"Choices [a]dd, [m]odify, [r]emove or press enter when done",
+			elementList,
+			"", "", true)
 		if len(menu) > 1 {
 			menu = menu[0:1]
 		}
@@ -465,7 +478,7 @@ func modifyElementsTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer
 		case "a":
 			if !ok {
 				fmt.Fprintf(out, "Enter element id to add: ")
-				opt = getAnswer(buf, "", false)
+				opt = prompt.GetAnswer("", false)
 				elementId, ok = getIdFromList(elementList, opt)
 			}
 			if ok {
@@ -477,7 +490,7 @@ func modifyElementsTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer
 		case "m":
 			if elementId == "" {
 				fmt.Fprintf(out, "Enter element id to modify: ")
-				opt = getAnswer(buf, "", false)
+				opt = prompt.GetAnswer("", false)
 				elementId, ok = getIdFromList(elementList, opt)
 			}
 			if err := modifyElementTUI(model, in, out, eout, elementId); err != nil {
@@ -486,7 +499,7 @@ func modifyElementsTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer
 		case "r":
 			if elementId == "" {
 				fmt.Fprintf(out, "Enter element id to remove: ")
-				opt = getAnswer(buf, "", false)
+				opt = prompt.GetAnswer("", false)
 				elementId, ok = getIdFromList(elementList, opt)
 			}
 			if ok {
@@ -507,61 +520,48 @@ func modifyElementsTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer
 }
 
 func modifyModelMetadataTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer) error {
-	buf := bufio.NewReader(in)
+	prompt := NewPrompt(in, out, eout)
 	for quit := false; !quit; {
-		menu, opt := selectMenuItem(in, out,
-				"Manage Model Metadata",
-			    "Menu [i]d, [d]escription or press enter when done",	
+		menu, opt := prompt.SelectMenu(
+			"Manage Model Metadata",
+			"Menu [i]d, [d]escription or press enter when done",
 			[]string{
 				fmt.Sprintf("id: %q", model.Id),
 				//fmt.Sprintf("title: %q", model.Title),
 				fmt.Sprintf("description: %q", model.Description),
 			},
-			false, "", "", true)
+			"", "", true)
 
 		if len(menu) > 0 {
-             menu = menu[0:1]
-        }
+			menu = menu[0:1]
+		}
 		switch menu {
-			case "i":
-				if opt == "" {
-					 fmt.Fprintf(out, `Enter id: `)
-                     opt = getAnswer(buf, "", false)
+		case "i":
+			if opt == "" {
+				fmt.Fprintf(out, `Enter id: `)
+				opt = prompt.GetAnswer("", false)
+			}
+			if opt != "" {
+				if opt != model.Id {
+					model.Id = opt
+					model.Changed(true)
 				}
-				if opt != "" {
-					if opt != model.Id {
-						model.Id = opt
-						model.Changed(true)
-					}
+			}
+		case "d":
+			if opt == "" {
+				fmt.Fprintf(out, `Enter Description: `)
+				opt = prompt.GetAnswer("", false)
+			}
+			if opt != "" {
+				if opt != model.Description {
+					model.Description = opt
+					model.Changed(true)
 				}
-			/*
-			case "t":
-				if opt == "" {
-					 fmt.Fprintf(out, `Enter Title: `)
-                     opt = getAnswer(buf, "", false)
-				}
-				if opt != "" {
-					if opt != model.Title {
-						model.Title = opt
-						model.Changed(true)
-					}
-				}
-			*/
-			case "d":
-				if opt == "" {
-					 fmt.Fprintf(out, `Enter Description: `)
-                     opt = getAnswer(buf, "", false)
-				}
-				if opt != "" {
-					if opt != model.Description {
-						model.Description = opt
-						model.Changed(true)
-					}
-				}
-			case "q":
-				quit = true
-			default:
-				quit = true
+			}
+		case "q":
+			quit = true
+		default:
+			quit = true
 		}
 	}
 	return nil
@@ -576,13 +576,67 @@ func ModelInteractively(model *Model) error {
 	if err := modifyModelMetadataTUI(model, in, out, eout); err != nil {
 		return err
 	}
+	/*
 	// Manage Model Attributes
 	if err := modifyModelAttributesTUI(model, in, out, eout); err != nil {
 		return err
 	}
+	*/
 	// Manage Model Elements
 	if err := modifyElementsTUI(model, in, out, eout); err != nil {
 		return err
 	}
 	return nil
+}
+
+//
+// Misc functions
+//
+
+func getIdFromList(list []string, id string) (string, bool) {
+	nRe := regexp.MustCompile(`^[0-9]+$`)
+	// See if we have been given a model number or a name
+	if isDigit := nRe.Match([]byte(id)); isDigit {
+		mNo, err := strconv.Atoi(id)
+		if err == nil {
+			// Adjust provided integer for zero based index.
+			if mNo > 0 {
+				mNo--
+			} else {
+				mNo = 0
+			}
+			if mNo < len(list) {
+				if strings.Contains(list[mNo], " ") {
+					parts := strings.SplitN(list[mNo], " ", 2)
+					return parts[0], true
+				}
+				return list[mNo], true
+			}
+		}
+	}
+	if IsValidVarname(id) {
+		return id, true
+	}
+	return "", false
+}
+
+// Get return the first key and value pair
+func getValAndLabel(option map[string]string) (string, string, bool) {
+	for val, label := range option {
+		return val, label, true
+	}
+	return "", "", false
+}
+
+// getValueLabelList takes an array of map[string]string and yours a list of
+// strings indicating the value and label
+func getValueLabelList(list []map[string]string) []string {
+	options := []string{}
+	for _, m := range list {
+		val, label, ok := getValAndLabel(m)
+		if ok {
+			options = append(options, fmt.Sprintf("%s %s", val, label))
+		}
+	}
+	return options
 }
