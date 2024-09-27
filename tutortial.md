@@ -1,9 +1,11 @@
 
 # Tutorial
 
-The models package provides a means of describing a data model based on HTML elements expressed as YAML. A given model can then be rendered to HTML or SQLite 3 SQL Schema. In the followng totorial you will create a simple "guestbook" model and render it to HTML and SQLite 3 SQL scheme.
+The models package provides a means of describing a data model based on HTML elements expressed as YAML. A given model can then be rendered to HTML or SQLite 3 SQL Schema. In the following tutorial you will create a simple "guestbook" model and render it to HTML and SQLite 3 SQL scheme.
 
 ## Steps
+
+The models package includes a demonstration program called `modelgen`. We'll use it in this tutorial.
 
 1. Generate a model YAML file using "model" action
 2. Generate an HTML web form using the "html" action
@@ -23,62 +25,46 @@ When you type in the command above you will be presented with the following menu
 
 ~~~
 Manage Model Metadata
-
 	id: "guestbook"
 	description: "... description of \"guestbook\" goes here ..."
-
 Menu [i]d, [d]escription or press enter when done
 ~~~
 
 Let's change the description to "A guestbook demo".  To do this press "d" followed by the enter key.
 
-You should now be prompted to enter a new description. If you just press enter then the description will not be changed.
-When prompted type in "A guestbook demo" then press the enter key.  You should see something like the following displayed.
+You should now be prompted to enter a new description. Type "A guestbook demo" (without quotes), then press the enter key.
+
+You should see something like the following displayed.
 
 ~~~
 Manage Model Metadata
-
 	id: "guestbook"
 	description: "... description of \"guestbook\" goes here ..."
-
 Menu [i]d, [d]escription or press enter when done
 d
 Enter Description: A guestbook demo
 Manage Model Metadata
-
 	id: "guestbook"
 	description: "A guestbook demo"
-
 Menu [i]d, [d]escription or press enter when done
 ~~~
 
-Notice that the screen is NOT cleared between actions.  The interactive interface is based around the simple notion of prompt and
-response. It should run easily in most POSIX terminals because it doesn't do anything fancy. Now press the enter key again and 
-you will see a new menu added at the bottom of the screen.
+Notice that the screen is NOT cleared between menus and prompts. The reason for this is it allows you to see what has gone before as well as ensure it'll run in most terminals regardless of operating system.
+
+Press enter again. You should now see the following appear at the bottom of the screen.
 
 ~~~
-Manage guestbook attributes (none required)
 
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
-~~~
-
-A model may have attributes. These are rendered into the HTML generated form but are not required. They are present primarily for compatibility
-with GitHub YAML Issue Templates, the inspiration for the models. package. Press enter again and the new Menu should appear to define the elements
-of your data model.
-
-~~~
 Manage guestbook elements
-
-	1: id
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+	id
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-There are three actions that can be taken on your element list. You can add an element "a", modify "m" and element and remove "r" an element. The action
-"m", "r" can be followed by a space and the number of the element you wish to change.
+There are three actions that can be taken on your element list. You can add an element by typing "a" and pressing enter. You can modify and element by typing "m" and pressing enter. You can remove an element by typing "r" and enter.
 
-When you "add" an element a plain old "text" element is appended to the list.  If you want to something different then you "modify" the element to meet your needs.
+The menu will then prompt you for more information such as the element identifier or name.
+
+When you "add" an element a plain old "text" element is appended to the list.  If you want to some other type of element then you "modify" after adding it.
 
 The following element types are currently supported in the models package and are based on their HTML input types.
 
@@ -98,24 +84,21 @@ The following element types are currently supported in the models package and ar
 - [time](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/time)
 - [url](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/url)
 
-Two additional types are defined, "orcid" and "isni" these use the HTML pattern attribute to control form.  In a Go program using the models package a
-generator and validator is available for each of these types. The generator populates the `Element` type in the model while the validator will compare
-a string with the properties described in the element.  The demo program modelgen does not use these features.
+Two additional types are defined, "orcid" and "isni" these use the HTML pattern attribute to control form.  In a Go program using the models package a generator and validator is available for each of these types. The generator populates the `Element` type in the model while the validator will compare a string with the properties described in the element.  The demo program modelgen does not use these features.
 
-When you create a model a "id" element is always generated. If you do not need it you can use "r" to remove it.
+When you create a model an "id" element is always generated. If you do not need it you can use "r" to remove it.
 
-Let's add two text elements, "name" and "msg". First add the name, type "e" and press the enter key. At the prompt add "name" (without the quotes).
+Let's add two text elements, "name" and "msg". First add the name, type "a" and press the enter key. At the prompt add "name" (without the quotes).
+
 The result should look like the following.
 
 ~~~
 a
 Enter element id to add: name
 Manage guestbook elements
-
-	1: id
-	2: name
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+	id
+	name
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
 Now type "a" and press the enter key again, this time at the prompt add "msg" (without the quotes).
@@ -124,113 +107,101 @@ Now type "a" and press the enter key again, this time at the prompt add "msg" (w
 a
 Enter element id to add: msg
 Manage guestbook elements
-
-	1: id
-	2: name
-	3: msg
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+	id
+	name
+	msg
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-As mentioned by default a "text" input type is added. This is fine for `name` and `msg` but we should require a name when 
-adding an entry to the guest book. We do that by adding an attribute to name. To do that we need to modify name. Type "m" and then press the entery key.
-You are then prompted for the element you want to modify. In our case it is "name" (without the quotes) followed by pressing the enter key.
-You should now see something like the following.
+As mentioned by default a "text" input type is added. This is fine for `name` and `msg`. A name in the guest book should be required so we need to "modify" "name".  Type "m" and press enter, then type "name" (without quotes) and press enter. You should now see something like this.
 
 ~~~
 m
 Enter element id to modify: name
 Manage guestbook.name element
-
 	id name
 	type text
 	label Name
-	pattern
-	attributes name
+	pattern 
+	attributes:
+		name
 	object identifier? false
-
-Menu [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done
+Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done
 ~~~
 
-We want to add an attribute so the next step is to type "a" followed by the enter key. We will then be shown the list of attributes that are defined.
+You are now able to modify the "name" element.  To make an element required we want to add `require="true"` to
+the attribute list.  Type "a" and press enter". You should see something like this.
 
 ~~~
 a
-Manage guestbook.name attributes
-
-	1: name -> "name"
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+Modify element guestbook.name attributes
+	name -> "name"
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-Since we need to add our "required" attribute type "a" followed by the enter key. At the prompt type in "required" (without the quotes).
+This is a list of `guestbook.name` defined attributes. Currently there is only a `guestbook.name.name` attribute. Type "a" and press enter. Then enter "require" (without quotes) and press enter.
 
 ~~~
 a
 Enter attribute name: required
-Manage guestbook.name attributes
-
-	1: name -> "name"
-	2: required -> ""
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+Modify element guestbook.name attributes
+	name -> "name"
+	required -> ""
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-Notice that "required" was added to the list but it's value is an empty string. We want the value to be "true". We modify it by typing in "m" and pressing enter. Whenm prompted we type in "required" and press enter. We are then prompted for a value, type in "true" (without the quotes) and press enter.
+Notice we now have a "required" attribute but the value is empty. We want the value to be "true". So once again we type "m" and when prompted type "required" before typing "true" (without quotes).
 
 ~~~
+m
 Enter attribute name: required
 Enter required's value: true
-Manage guestbook.name attributes
-
-	1: name -> "name"
-	2: required -> "true"
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+Modify element guestbook.name attributes
+	required -> "true"
+	name -> "name"
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-We're done making changes to our model.  When you're done you generally just press the enter key by itself. Give it a try.
-You should now see something like the following.
+The name attribute is now a required element.  If we press enter again
+you should see the full element description.
 
 ~~~
 Manage guestbook.name element
-
 	id name
 	type text
 	label Name
-	pattern
-	attributes name,
+	pattern 
+	attributes:
+		name,
 		required
 	object identifier? false
-
-Menu [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done
+Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done
 ~~~
 
-Press enter again and you should not see the follow (we're backing out of the menus).
+Press enter one more time we are back to the elements list.
 
 ~~~
 Manage guestbook elements
-
-	1: id
-	2: name
-	3: msg
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done
+	id
+	name
+	msg
+Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-Press enter again and you're be prompted to save the model. The default answer is "Y" so you can just press enter again.
+We have our basic guestbook model completed.  Press enter and you should be prompted to save the model file.
 
 ~~~
-
 Save guestbook.yaml (Y/n)?
 ~~~
 
-We've created our first model YAML file. Congraduation.
+If you reply "y" then enter or just press enter it'll save the changes and exit the program.  If you answer anything else it'll exit the program without saving.
+
+We've created our first model YAML file.
 
 You can see the model using the `cat` command on macOS and Linux or the `type` command on Windows.
 Your guestbook.yaml should look something like this.
 
-~~~
+~~~yaml
 id: guestbook
 description: A guestbook demo
 elements:
@@ -252,6 +223,8 @@ elements:
       label: Msg
 ~~~
 
+Congratulations! Model done.
+
 ## Generating HTML
 
 A simple HTML form can be generated with the following command now that we have our model YAML file.
@@ -263,8 +236,9 @@ modelgen html guestbook.yaml
 Here's an example of the output.
 
 ~~~html
+<!-- guestbook: A guestbook demo -->
 <form id="guestbook">
-  <div class="guestbook-id"><input class="guestbook-id" type="text" id="id" readonly="true" ></div>
+  <div class="guestbook-id"><input class="guestbook-id" type="text" id="id" required ></div>
   <div class="guestbook-name"><label class="guestbook-name" set="name">Name</label> <input class="guestbook-name" type="text" id="name" name="name" required ></div>
   <div class="guestbook-msg"><label class="guestbook-msg" set="msg">Msg</label> <input class="guestbook-msg" type="text" id="msg" name="msg" ></div>
   <div class="guestbook-submit"><input class="guestbook-submit" type="submit" value="submit"> <input class="guestbook-submit" type="reset" value="cancel"></div>

@@ -26,10 +26,12 @@
 <h1 id="tutorial">Tutorial</h1>
 <p>The models package provides a means of describing a data model based
 on HTML elements expressed as YAML. A given model can then be rendered
-to HTML or SQLite 3 SQL Schema. In the followng totorial you will create
-a simple “guestbook” model and render it to HTML and SQLite 3 SQL
+to HTML or SQLite 3 SQL Schema. In the following tutorial you will
+create a simple “guestbook” model and render it to HTML and SQLite 3 SQL
 scheme.</p>
 <h2 id="steps">Steps</h2>
+<p>The models package includes a demonstration program called
+<code>modelgen</code>. We’ll use it in this tutorial.</p>
 <ol type="1">
 <li>Generate a model YAML file using “model” action</li>
 <li>Generate an HTML web form using the “html” action</li>
@@ -48,57 +50,42 @@ complete the task.</p>
 <p>When you type in the command above you will be presented with the
 following menu.</p>
 <pre><code>Manage Model Metadata
-
     id: &quot;guestbook&quot;
     description: &quot;... description of \&quot;guestbook\&quot; goes here ...&quot;
-
 Menu [i]d, [d]escription or press enter when done</code></pre>
 <p>Let’s change the description to “A guestbook demo”. To do this press
 “d” followed by the enter key.</p>
-<p>You should now be prompted to enter a new description. If you just
-press enter then the description will not be changed. When prompted type
-in “A guestbook demo” then press the enter key. You should see something
-like the following displayed.</p>
+<p>You should now be prompted to enter a new description. Type “A
+guestbook demo” (without quotes), then press the enter key.</p>
+<p>You should see something like the following displayed.</p>
 <pre><code>Manage Model Metadata
-
     id: &quot;guestbook&quot;
     description: &quot;... description of \&quot;guestbook\&quot; goes here ...&quot;
-
 Menu [i]d, [d]escription or press enter when done
 d
 Enter Description: A guestbook demo
 Manage Model Metadata
-
     id: &quot;guestbook&quot;
     description: &quot;A guestbook demo&quot;
-
 Menu [i]d, [d]escription or press enter when done</code></pre>
-<p>Notice that the screen is NOT cleared between actions. The
-interactive interface is based around the simple notion of prompt and
-response. It should run easily in most POSIX terminals because it
-doesn’t do anything fancy. Now press the enter key again and you will
-see a new menu added at the bottom of the screen.</p>
-<pre><code>Manage guestbook attributes (none required)
-
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
-<p>A model may have attributes. These are rendered into the HTML
-generated form but are not required. They are present primarily for
-compatibility with GitHub YAML Issue Templates, the inspiration for the
-models. package. Press enter again and the new Menu should appear to
-define the elements of your data model.</p>
-<pre><code>Manage guestbook elements
-
-    1: id
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+<p>Notice that the screen is NOT cleared between menus and prompts. The
+reason for this is it allows you to see what has gone before as well as
+ensure it’ll run in most terminals regardless of operating system.</p>
+<p>Press enter again. You should now see the following appear at the
+bottom of the screen.</p>
+<pre><code>
+Manage guestbook elements
+    id
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
 <p>There are three actions that can be taken on your element list. You
-can add an element “a”, modify “m” and element and remove “r” an
-element. The action “m”, “r” can be followed by a space and the number
-of the element you wish to change.</p>
+can add an element by typing “a” and pressing enter. You can modify and
+element by typing “m” and pressing enter. You can remove an element by
+typing “r” and enter.</p>
+<p>The menu will then prompt you for more information such as the
+element identifier or name.</p>
 <p>When you “add” an element a plain old “text” element is appended to
-the list. If you want to something different then you “modify” the
-element to meet your needs.</p>
+the list. If you want to some other type of element then you “modify”
+after adding it.</p>
 <p>The following element types are currently supported in the models
 package and are based on their HTML input types.</p>
 <ul>
@@ -139,161 +126,148 @@ package a generator and validator is available for each of these types.
 The generator populates the <code>Element</code> type in the model while
 the validator will compare a string with the properties described in the
 element. The demo program modelgen does not use these features.</p>
-<p>When you create a model a “id” element is always generated. If you do
-not need it you can use “r” to remove it.</p>
+<p>When you create a model an “id” element is always generated. If you
+do not need it you can use “r” to remove it.</p>
 <p>Let’s add two text elements, “name” and “msg”. First add the name,
-type “e” and press the enter key. At the prompt add “name” (without the
-quotes). The result should look like the following.</p>
+type “a” and press the enter key. At the prompt add “name” (without the
+quotes).</p>
+<p>The result should look like the following.</p>
 <pre><code>a
 Enter element id to add: name
 Manage guestbook elements
-
-    1: id
-    2: name
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+    id
+    name
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
 <p>Now type “a” and press the enter key again, this time at the prompt
 add “msg” (without the quotes).</p>
 <pre><code>a
 Enter element id to add: msg
 Manage guestbook elements
-
-    1: id
-    2: name
-    3: msg
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+    id
+    name
+    msg
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
 <p>As mentioned by default a “text” input type is added. This is fine
-for <code>name</code> and <code>msg</code> but we should require a name
-when adding an entry to the guest book. We do that by adding an
-attribute to name. To do that we need to modify name. Type “m” and then
-press the entery key. You are then prompted for the element you want to
-modify. In our case it is “name” (without the quotes) followed by
-pressing the enter key. You should now see something like the
-following.</p>
+for <code>name</code> and <code>msg</code>. A name in the guest book
+should be required so we need to “modify” “name”. Type “m” and press
+enter, then type “name” (without quotes) and press enter. You should now
+see something like this.</p>
 <pre><code>m
 Enter element id to modify: name
 Manage guestbook.name element
-
     id name
     type text
     label Name
-    pattern
-    attributes name
+    pattern 
+    attributes:
+        name
     object identifier? false
-
-Menu [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done</code></pre>
-<p>We want to add an attribute so the next step is to type “a” followed
-by the enter key. We will then be shown the list of attributes that are
-defined.</p>
+Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done</code></pre>
+<p>You are now able to modify the “name” element. To make an element
+required we want to add <code>require="true"</code> to the attribute
+list. Type “a” and press enter”. You should see something like this.</p>
 <pre><code>a
-Manage guestbook.name attributes
-
-    1: name -&gt; &quot;name&quot;
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
-<p>Since we need to add our “required” attribute type “a” followed by
-the enter key. At the prompt type in “required” (without the
-quotes).</p>
+Modify element guestbook.name attributes
+    name -&gt; &quot;name&quot;
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+<p>This is a list of <code>guestbook.name</code> defined attributes.
+Currently there is only a <code>guestbook.name.name</code> attribute.
+Type “a” and press enter. Then enter “require” (without quotes) and
+press enter.</p>
 <pre><code>a
 Enter attribute name: required
-Manage guestbook.name attributes
-
-    1: name -&gt; &quot;name&quot;
-    2: required -&gt; &quot;&quot;
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
-<p>Notice that “required” was added to the list but it’s value is an
-empty string. We want the value to be “true”. We modify it by typing in
-“m” and pressing enter. Whenm prompted we type in “required” and press
-enter. We are then prompted for a value, type in “true” (without the
-quotes) and press enter.</p>
-<pre><code>Enter attribute name: required
+Modify element guestbook.name attributes
+    name -&gt; &quot;name&quot;
+    required -&gt; &quot;&quot;
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+<p>Notice we now have a “required” attribute but the value is empty. We
+want the value to be “true”. So once again we type “m” and when prompted
+type “required” before typing “true” (without quotes).</p>
+<pre><code>m
+Enter attribute name: required
 Enter required&#39;s value: true
-Manage guestbook.name attributes
-
-    1: name -&gt; &quot;name&quot;
-    2: required -&gt; &quot;true&quot;
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
-<p>We’re done making changes to our model. When you’re done you
-generally just press the enter key by itself. Give it a try. You should
-now see something like the following.</p>
+Modify element guestbook.name attributes
+    required -&gt; &quot;true&quot;
+    name -&gt; &quot;name&quot;
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+<p>The name attribute is now a required element. If we press enter again
+you should see the full element description.</p>
 <pre><code>Manage guestbook.name element
-
     id name
     type text
     label Name
-    pattern
-    attributes name,
+    pattern 
+    attributes:
+        name,
         required
     object identifier? false
-
-Menu [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done</code></pre>
-<p>Press enter again and you should not see the follow (we’re backing
-out of the menus).</p>
+Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done</code></pre>
+<p>Press enter one more time we are back to the elements list.</p>
 <pre><code>Manage guestbook elements
-
-    1: id
-    2: name
-    3: msg
-
-Menu [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
-<p>Press enter again and you’re be prompted to save the model. The
-default answer is “Y” so you can just press enter again.</p>
-<pre><code>
-Save guestbook.yaml (Y/n)?</code></pre>
-<p>We’ve created our first model YAML file. Congraduation.</p>
+    id
+    name
+    msg
+Choices [a]dd, [m]odify, [r]emove or press enter when done</code></pre>
+<p>We have our basic guestbook model completed. Press enter and you
+should be prompted to save the model file.</p>
+<pre><code>Save guestbook.yaml (Y/n)?</code></pre>
+<p>If you reply “y” then enter or just press enter it’ll save the
+changes and exit the program. If you answer anything else it’ll exit the
+program without saving.</p>
+<p>We’ve created our first model YAML file.</p>
 <p>You can see the model using the <code>cat</code> command on macOS and
 Linux or the <code>type</code> command on Windows. Your guestbook.yaml
 should look something like this.</p>
-<pre><code>id: guestbook
-description: A guestbook demo
-elements:
-    - type: text
-      id: id
-      attributes:
-        required: &quot;true&quot;
-      is_primary_id: true
-    - type: text
-      id: name
-      attributes:
-        name: name
-        required: &quot;true&quot;
-      label: Name
-    - type: text
-      id: msg
-      attributes:
-        name: msg
-      label: Msg</code></pre>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> guestbook</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">:</span><span class="at"> A guestbook demo</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">elements</span><span class="kw">:</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> text</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">id</span><span class="kw">:</span><span class="at"> id</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">required</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;true&quot;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">is_primary_id</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> text</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">id</span><span class="kw">:</span><span class="at"> name</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">name</span><span class="kw">:</span><span class="at"> name</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">required</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;true&quot;</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">label</span><span class="kw">:</span><span class="at"> Name</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> text</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">id</span><span class="kw">:</span><span class="at"> msg</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">name</span><span class="kw">:</span><span class="at"> msg</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">label</span><span class="kw">:</span><span class="at"> Msg</span></span></code></pre></div>
+<p>Congratulations! Model done.</p>
 <h2 id="generating-html">Generating HTML</h2>
 <p>A simple HTML form can be generated with the following command now
 that we have our model YAML file.</p>
 <pre><code>modelgen html guestbook.yaml</code></pre>
 <p>Here’s an example of the output.</p>
-<div class="sourceCode" id="cb17"><pre
-class="sourceCode html"><code class="sourceCode html"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">form</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;guestbook&quot;</span><span class="dt">&gt;</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-id&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-id&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;text&quot;</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;id&quot;</span><span class="ot"> readonly</span><span class="op">=</span><span class="st">&quot;true&quot;</span><span class="ot"> </span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-name&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">label</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-name&quot;</span><span class="ot"> set</span><span class="op">=</span><span class="st">&quot;name&quot;</span><span class="dt">&gt;</span>Name<span class="dt">&lt;/</span><span class="kw">label</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-name&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;text&quot;</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;name&quot;</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;name&quot;</span><span class="ot"> required </span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-msg&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">label</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-msg&quot;</span><span class="ot"> set</span><span class="op">=</span><span class="st">&quot;msg&quot;</span><span class="dt">&gt;</span>Msg<span class="dt">&lt;/</span><span class="kw">label</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-msg&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;text&quot;</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;msg&quot;</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;msg&quot;</span><span class="ot"> </span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-submit&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-submit&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;submit&quot;</span><span class="ot"> value</span><span class="op">=</span><span class="st">&quot;submit&quot;</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-submit&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;reset&quot;</span><span class="ot"> value</span><span class="op">=</span><span class="st">&quot;cancel&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">form</span><span class="dt">&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode html"><code class="sourceCode html"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- guestbook: A guestbook demo --&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">form</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;guestbook&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-id&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-id&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;text&quot;</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;id&quot;</span><span class="ot"> required </span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-name&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">label</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-name&quot;</span><span class="ot"> set</span><span class="op">=</span><span class="st">&quot;name&quot;</span><span class="dt">&gt;</span>Name<span class="dt">&lt;/</span><span class="kw">label</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-name&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;text&quot;</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;name&quot;</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;name&quot;</span><span class="ot"> required </span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-msg&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">label</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-msg&quot;</span><span class="ot"> set</span><span class="op">=</span><span class="st">&quot;msg&quot;</span><span class="dt">&gt;</span>Msg<span class="dt">&lt;/</span><span class="kw">label</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-msg&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;text&quot;</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;msg&quot;</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;msg&quot;</span><span class="ot"> </span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-submit&quot;</span><span class="dt">&gt;&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-submit&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;submit&quot;</span><span class="ot"> value</span><span class="op">=</span><span class="st">&quot;submit&quot;</span><span class="dt">&gt;</span> <span class="dt">&lt;</span><span class="kw">input</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;guestbook-submit&quot;</span><span class="ot"> type</span><span class="op">=</span><span class="st">&quot;reset&quot;</span><span class="ot"> value</span><span class="op">=</span><span class="st">&quot;cancel&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">form</span><span class="dt">&gt;</span></span></code></pre></div>
 <h2 id="generating-sql-for-sqlite-schema">Generating SQL for SQLite
 Schema</h2>
 <p>A simple SQLite 3 Schema can be create via SQL. Use the following
 command using the “sqlite” action.</p>
 <pre><code>modedgen sqlite guestbook.yaml</code></pre>
 <p>Here’s an example of the output.</p>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode sql"><code class="sourceCode sql"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">--</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- guestbook</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">--</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- A guestbook demo</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="kw">create</span> <span class="kw">table</span> guestbook <span class="cf">if</span> <span class="kw">not</span> <span class="kw">exists</span> (</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> text <span class="kw">primary</span> <span class="kw">key</span>,</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  name text,</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  msg text</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">--</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- guestbook</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co">--</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- A guestbook demo</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="kw">create</span> <span class="kw">table</span> guestbook <span class="cf">if</span> <span class="kw">not</span> <span class="kw">exists</span> (</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> text <span class="kw">primary</span> <span class="kw">key</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  name text,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  msg text</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
 </section>
 
 <footer>

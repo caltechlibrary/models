@@ -9,11 +9,13 @@ import (
 // ModelToHTML takes a model and renders an input form. The form is not
 // populated with values through that could be done easily via JavaScript and DOM calls.
 func ModelToHTML(out io.Writer, model *Model) error {
-	// FIXME: Handle title if it exists
+	// Include the description as an HTML comment.
 	// Write opening form element
 	if model.Id != "" {
+		fmt.Fprintf(out, "<!-- %s: %s -->\n", model.Id, model.Description)
 		fmt.Fprintf(out, "<form id=%q", model.Id)
 	} else {
+		fmt.Fprintf(out, "<!-- %s -->\n", model.Description)
 		fmt.Fprintf(out, "<form")
 	}
 	for k, v := range model.Attributes {
