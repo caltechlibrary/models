@@ -11,16 +11,16 @@ authors:
     orcid: ""
 
 repository-code: "https://github.com/caltechlibary/models"
-version: 0.0.2
+version: 0.0.3
 license-url: "https://spdx.org/licenses/BSD-3-Clause"
 keywords: [ "metadata" ]
-date-released: 2024-09-26
+date-released: 2024-09-27
 ---
 
 About this software
 ===================
 
-## models 0.0.2
+## models 0.0.3
 
 ### Authors
 
