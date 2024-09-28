@@ -80,6 +80,10 @@ elements:
 			t.Errorf("expected element id %q to be in list %+v", elemId, elemIds)
 		}
 	}
+	primaryId := m.GetPrimaryId()
+	if primaryId == "" {
+		t.Errorf("expected %q, got %q", "id", primaryId)
+	}
 }
 
 func TestModelBuilding(t *testing.T) {

@@ -152,6 +152,16 @@ func (m *Model) GetElementIds() []string {
 	return ids
 }
 
+// GetPrimaryId returns the primary id
+func (m *Model) GetPrimaryId() string {
+	for _, elem := range m.Elements {
+		if elem.IsObjectId {
+			return elem.Id
+		}
+	}
+	return ""
+}
+
 // GetElementById returns a Element from the model's .Elements.
 func (m *Model) GetElementById(id string) (*Element, bool) {
 	for _, elem := range m.Elements {
