@@ -126,3 +126,56 @@ func TestHelperFuncs(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateModel(t *testing.T) {
+    src := []byte(`id: test_validator
+description: This is a test of the validation code
+elements:
+  - id: pid
+    type: text
+    attributes:
+      name: pid
+      required: true
+    is_primary_id: true
+    label: Personal Identifier
+  - id: lived
+    type: text
+    attributes:
+      name: lived
+      required: true
+    label: Lived Name
+  - id: family
+    type: text
+    attributes:
+      name: family
+      required: true
+    label: Family Name
+  - id: orcid
+    type: text
+    pattern: "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]"
+    attributes:
+      name: orcid
+      required: true
+    label: ORCID
+`)
+	model, err := NewModel("test_model")
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	if err := yaml.Unmarshal(src, &model); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	SetDefaultTypes(model)
+
+	formData := map[string]string{
+		"pid": "jane-doe", 
+		"lived": "Jane", 
+		"family": "Doe", 
+		"orcid": "0000-1111-2222-3333",
+	}
+	if ok := model.Validate(formData); ! ok {
+		t.Errorf("%+v failed to validate", formData)
+	}
+}

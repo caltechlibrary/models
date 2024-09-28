@@ -13,6 +13,10 @@ import (
 	"github.com/nyaruka/phonenumbers"
 )
 
+const (
+	OrcidPattern = `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
+)
+
 // GenerateDate setups up for HTML date input element
 func GenerateDate() *Element {
 	return &Element{
@@ -145,10 +149,14 @@ func ValidateText(elem *Element, formValue string) bool {
 	if elem.Pattern == "" {
 		return true
 	}
+	/*
 	re, err := regexp.CompilePOSIX(elem.Pattern)
 	if err != nil {
 		return false
 	}
+	return re.MatchString(formValue)
+	*/
+	re := regexp.MustCompilePOSIX(elem.Pattern)
 	return re.MatchString(formValue)
 }
 
@@ -483,7 +491,7 @@ func GenerateORCID() *Element {
 	return &Element{
 		Type: "text",
 		Attributes: map[string]string{
-			"pattern": "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9X]{4}:https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9X]{4}",
+			"pattern": OrcidPattern,
 		},
 	}
 }

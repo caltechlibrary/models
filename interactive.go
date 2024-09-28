@@ -162,9 +162,7 @@ func modifyElementAttributesTUI(model *Model, in io.Reader, out io.Writer, eout 
 		if i := strings.Index(opt, " "); i >= 0  {
 			opt, val = opt[0:i], opt[i+1:]
 		}
-		//fmt.Printf("DEBUG menu -> %q, opt -> %q, val -> %q\n",menu, opt, val)
 		opt, ok = getIdFromList(attributeList, opt)
-		//fmt.Printf("DEBUG opt, ok -> %q, %t, val -> %q\n",opt, ok, val)
 		switch menu {
 		case "a":
 			if opt == "" {
