@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strings"
 	"sort"
+	"strings"
 )
 
 // RenderFunc is a function thation takes an io.Writer and Model then
@@ -18,7 +18,7 @@ type GenElementFunc func() *Element
 
 // ValidateFunc is a function that validates form assocaited with the Element and the string value
 // received in the web form (value before converting to Go type).
-type ValidateFunc func(*Element,string) bool 
+type ValidateFunc func(*Element, string) bool
 
 // Model implements a data structure description inspired by GitHub YAML issue template syntax.
 // See <https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms>
@@ -44,13 +44,13 @@ type Model struct {
 
 	// Title, A default title that will be pre-populated in the issue submission form.
 	// (optional) only there for compatibility with GitHub YAML Issue Templates
-	Title string `json:"title,omitempty" yaml:"title,omitempty"`
+	//Title string `json:"title,omitempty" yaml:"title,omitempty"`
 
 	// isChanged is an internal state used by the modeler to know when a model has changed
 	isChanged bool `json:"-" yaml:"-"`
 
 	// renderer is a map of names to RenderFunc functions. A RenderFunc is that take a io.Writer and the model object as parameters then
-	// return an error type.  This allows for many renderers to be used with Model by 
+	// return an error type.  This allows for many renderers to be used with Model by
 	// registering the function then envoking render with the name registered.
 	renderer map[string]RenderFunc `json:"-" yaml:"-"`
 
@@ -74,7 +74,7 @@ func (model *Model) Validate(formData map[string]string) bool {
 	for k, v := range formData {
 		if elem, ok := model.GetElementById(k); ok {
 			if validator, ok := model.validators[elem.Type]; ok {
-				if ! validator(elem, v) {
+				if !validator(elem, v) {
 					return false
 				}
 			} else {
@@ -172,7 +172,6 @@ func (m *Model) GetElementById(id string) (*Element, bool) {
 	return nil, false
 }
 
-
 // Element implementes the GitHub YAML issue template syntax for an input element.
 // The input element YAML is described at <https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema>
 //
@@ -209,6 +208,10 @@ type Element struct {
 	// IsObjectId (i.e. is the identifier of the object) used by for the modeled data.
 	// It is used in calculating routes and templates where the object identifier is required.
 	IsObjectId bool `json:"is_primary_id,omitempty" yaml:"is_primary_id,omitempty"`
+
+	// Generator indicates the type of automatic population of a field. It is used to
+	// indicate autoincrement and uuids for primary keys and timestamps for datetime oriented fields.
+	Generator string `json:"generator,omitempty" yaml:"generator,omitempty"`
 
 	// Label is used when rendering an HTML form as a label element tied to the input element via the set attribute and
 	// the element's id.
@@ -260,7 +263,7 @@ func IsValidVarname(s string) bool {
 }
 
 // NewElement, makes sure element id is valid, populates an element as a basic input type.
-// The new element has the attribute "name" and label set to default values. 
+// The new element has the attribute "name" and label set to default values.
 func NewElement(elementId string) (*Element, error) {
 	if !IsValidVarname(elementId) {
 		return nil, fmt.Errorf("invalid element id, %q", elementId)
@@ -431,7 +434,6 @@ func (model *Model) Render(out io.Writer, name string) error {
 	return fmt.Errorf("%s is not a registered rendering function", name)
 }
 
-
 // IsSupportedElementType checks if the element type is supported by Newt, returns true if OK false is it is not
 func (model *Model) IsSupportedElementType(eType string) bool {
 	for sType, _ := range model.genElements {
@@ -442,19 +444,18 @@ func (model *Model) IsSupportedElementType(eType string) bool {
 	return false
 }
 
-
 // getAttributeIds returns a list of attribue keys in a maps[string]interface{} structure
 func getAttributeIds(m map[string]string) []string {
-        ids := []string{}
-        for k, _ := range m {
-                if k != "" {
-                        ids = append(ids, k)
-                }
-        }
-        if len(ids) > 0 {
-                sort.Strings(ids)
-        }
-        return ids
+	ids := []string{}
+	for k, _ := range m {
+		if k != "" {
+			ids = append(ids, k)
+		}
+	}
+	if len(ids) > 0 {
+		sort.Strings(ids)
+	}
+	return ids
 }
 
 // Define takes a model and attaches a type definition (an element generator) and validator for the named type
@@ -468,4 +469,3 @@ func (model *Model) Define(typeName string, genElementFn GenElementFunc, validat
 	}
 	model.validators[typeName] = validateFn
 }
-
