@@ -50,7 +50,11 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 			case "autoincrement":
 				columnType = fmt.Sprintf("%s autoincrement", columnType)
 			case "timestamp":
-				columnType = fmt.Sprintf("%s default current_timestamp", columnType)
+				columnType = fmt.Sprintf("%s default current_timestamp not null", columnType)
+			case "created_timestamp":
+				columnType = fmt.Sprintf("%s default current_timestamp not null", columnType)
+			case "current_timestamp":
+				columnType = fmt.Sprintf("%s default current_timestamp not null", columnType)
 			}
 		}
 		if elem.IsObjectId {

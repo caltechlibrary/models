@@ -434,7 +434,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 			}
 		case "g":
 			if opt == "" {
-				fmt.Fprintf(out, "Enter generator (e.g. autoincrement, uuid, timestamp)")
+				fmt.Fprintf(out, "Enter generator (e.g. autoincrement, uuid, current_timestamp, created_timestamp)")
 				opt = prompt.GetAnswer("", true)
 			}
 			if opt != "" {

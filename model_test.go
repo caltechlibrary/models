@@ -61,7 +61,12 @@ elements:
     type: text
     attributes:
       name: updated
-    generator: timestamp
+    generator: current_timestamp
+  - id: created
+    type: text
+    atteributes:
+      name: created
+    generator: created_timestamp
 `
 	if err := yaml.Unmarshal([]byte(txt), m); err != nil {
 		t.Errorf("expected to be able to unmarshal yaml into model, %s", err)
@@ -91,14 +96,18 @@ elements:
 	}
 
 	generatedTypes := m.GetGeneratedTypes()
-	if len(generatedTypes) != 1 {
-		t.Errorf("expected 1 generator type elements, got %d", len(generatedTypes))
+	if len(generatedTypes) != 2 {
+		t.Errorf("expected 2 generator type elements, got %d", len(generatedTypes))
 	}
 	if val, ok := generatedTypes["updated"]; ! ok {
-		t.Errorf("expected %t, got %t in generator type", true , ok)
-	} else if val != "timestamp" {
-		t.Errorf("expected %q, got %q", "timestamp", val)
-
+		t.Errorf("expected updated to be %t, got %t in generator type", true , ok)
+	} else if val != "current_timestamp" {
+		t.Errorf("expected %q, got %q", "current_timestamp", val)
+	}
+	if val, ok := generatedTypes["created"]; ! ok {
+		t.Errorf("expected created to be %t, got %t in generator type", true , ok)
+	} else if val != "created_timestamp" {
+		t.Errorf("expected created %q, got %q", "created_timestamp", val)
 	}
 }
 
