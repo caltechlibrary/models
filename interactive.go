@@ -356,7 +356,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 		default:
 			menu, opt = prompt.SelectMenu(
 				fmt.Sprintf("Manage %s.%s element", model.Id, elementId),
-				"Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done",
+				"Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, [g]enerator or press enter when done",
 				[]string{
 					fmt.Sprintf("id %s", elementId),
 					fmt.Sprintf("type %s", elem.Type),
@@ -364,6 +364,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 					fmt.Sprintf("pattern %s", elem.Pattern),
 					fmt.Sprintf("attributes:\n\t\t%s", strings.Join(attributeList, ",\n\t\t")),
 					fmt.Sprintf("object identifier? %t", elem.IsObjectId),
+					fmt.Sprintf("generator %s", elem.Generator),
 				},
 				"", "", true)
 		}
@@ -430,6 +431,17 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 			} else {
 				elem.IsObjectId = !elem.IsObjectId
 				elem.Changed(true)
+			}
+		case "g":
+			if opt == "" {
+				fmt.Fprintf(out, "Enter generator (e.g. autoincrement, uuid, timestamp)")
+				opt = prompt.GetAnswer("", true)
+			}
+			if opt != "" {
+				if opt != elem.Generator {
+					elem.Generator = strings.TrimSpace(opt)
+					elem.Changed(true)
+				}
 			}
 		case "q":
 			quit = true

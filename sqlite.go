@@ -10,11 +10,6 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 	if ! IsValidVarname(model.Id) {
 		return fmt.Errorf("model id that can't be used for table name, %q", model.Id)
 	}
-	if model.Title != "" {
-		fmt.Fprintf(out, "\n--\n-- %s: %s\n--\n", model.Id, model.Title)
-	} else {
-		fmt.Fprintf(out, "\n--\n-- %s\n--\n", model.Id)
-	}
 	if model.Description != "" {
 		fmt.Fprintf(out, "-- %s\n", strings.ReplaceAll(model.Description, "\n", "\n-- "))
 	}
@@ -45,14 +40,23 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 			columnType = "num"
 		case "date":
 			columnType = "text"
+		case "datetime-local":
+			columnType = "text"
 		default:
 			columnType = "text"
 		}
-		if elem.IsObjectId {
-			fmt.Fprintf(out, "  %s %s primary key", elem.Id, columnType)
-		} else {
-			fmt.Fprintf(out, "  %s %s", elem.Id, columnType)
+		if elem.Generator != "" {
+			switch elem.Generator {
+			case "autoincrement":
+				columnType = fmt.Sprintf("%s autoincrement", columnType)
+			case "timestamp":
+				columnType = fmt.Sprintf("%s default current_timestamp", columnType)
+			}
 		}
+		if elem.IsObjectId {
+			columnType = fmt.Sprintf(" %s primary key", columnType)
+		}
+		fmt.Fprintf(out, "  %s %s", elem.Id, columnType)
 	}
 	if addNL {
 		fmt.Fprintf(out, "\n")
