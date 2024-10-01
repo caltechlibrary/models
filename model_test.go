@@ -57,6 +57,11 @@ elements:
     type: textarea
     attributes:
       name: msg
+  - id: updated
+    type: text
+    attributes:
+      name: updated
+    generator: timestamp
 `
 	if err := yaml.Unmarshal([]byte(txt), m); err != nil {
 		t.Errorf("expected to be able to unmarshal yaml into model, %s", err)
@@ -73,7 +78,7 @@ elements:
 			t.Errorf("expected %q to be in attribute list %+v", attr, expectedAttr)
 		}
 	}
-	expectedElemIds := []string{"id", "name", "msg"}
+	expectedElemIds := []string{"id", "name", "msg", "updated" }
 	elemIds := m.GetElementIds()
 	for _, elemId := range expectedElemIds {
 		if !inList(elemIds, elemId) {
@@ -83,6 +88,17 @@ elements:
 	primaryId := m.GetPrimaryId()
 	if primaryId == "" {
 		t.Errorf("expected %q, got %q", "id", primaryId)
+	}
+
+	generatedTypes := m.GetGeneratedTypes()
+	if len(generatedTypes) != 1 {
+		t.Errorf("expected 1 generator type elements, got %d", len(generatedTypes))
+	}
+	if val, ok := generatedTypes["updated"]; ! ok {
+		t.Errorf("expected %t, got %t in generator type", true , ok)
+	} else if val != "timestamp" {
+		t.Errorf("expected %q, got %q", "timestamp", val)
+
 	}
 }
 

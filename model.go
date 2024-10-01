@@ -162,6 +162,17 @@ func (m *Model) GetPrimaryId() string {
 	return ""
 }
 
+// GetGeneratedTypes returns a map of elemend id and value held by .Generator
+func (m *Model) GetGeneratedTypes() map[string]string {
+	gt := map[string]string{}
+	for _, elem := range m.Elements {
+		if elem.Generator != "" {
+			gt[elem.Id] = elem.Generator
+		}
+	}
+	return gt
+}
+
 // GetElementById returns a Element from the model's .Elements.
 func (m *Model) GetElementById(id string) (*Element, bool) {
 	for _, elem := range m.Elements {
