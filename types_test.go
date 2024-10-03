@@ -51,3 +51,14 @@ func TestDatetimeLocal(t *testing.T) {
 		t.Errorf("expected true, got false for value %q", val)
 	}
 }
+
+func TestUUID(t *testing.T) {
+	elem := new(Element)
+	elem.Id = "pid"
+	elem.Type = "uuid"
+	elem.Generator = "uuid"
+	val := "01925416-3e1a-77a5-9cf5-7452554913c8"
+	if ! ValidateUUID(elem, val) {
+		t.Errorf("expected true, got false for value %q",val)
+	}
+}

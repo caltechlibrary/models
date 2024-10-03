@@ -10,12 +10,30 @@ import (
 	"time"
 
 	// 3rd Party packages
+	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
 )
 
 const (
 	OrcidPattern = `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
 )
+
+// GenerateUUID setups up for an HTML uuid type input element
+func GenerateUUID() *Element {
+	return &Element{
+		Type: "text",
+		Attributes:map[string]string{
+			"placeholder": "enter a uuid",
+		},
+	}
+}
+
+func ValidateUUID(elem *Element, formValue string) bool {
+	if _, err := uuid.Parse(formValue); err != nil {
+		return false
+	}
+	return true
+}
 
 // GenerateDate setups up for HTML date input element
 func GenerateDate() *Element {
@@ -532,6 +550,7 @@ func SetDefaultTypes(model *Model) {
 	model.Define("textarea", GenerateTextarea, ValidateTextarea)
 	model.Define("orcid", GenerateORCID, ValidateORCID)
 	model.Define("isni", GenerateISNI, ValidateISNI)
+	model.Define("uuid", GenerateISNI, ValidateISNI)
 	// NOTE: The following are not in the default but their usefulness
 	// in the context of persisting data is not clear.
 	//
