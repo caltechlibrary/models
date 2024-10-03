@@ -61,4 +61,8 @@ func TestUUID(t *testing.T) {
 	if ! ValidateUUID(elem, val) {
 		t.Errorf("expected true, got false for value %q",val)
 	}
+  	val = "01925413-abc0-75c8-aa75-bfc062cd2949"
+	if ! ValidateUUID(elem, val) {
+		t.Errorf("expected true, got false for value %q",val)
+	}
 }
