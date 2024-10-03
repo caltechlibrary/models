@@ -97,6 +97,7 @@ func (model *Model) Validate(formData map[string]string) bool {
 func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 	ids := model.GetElementIds()
 	if len(ids) != len(data) {
+		log.Printf("DEBUG expected len(ids) %d, got len(data) %d", len(ids), len(data))
 		return false
 	}
 	for k, v := range data {
@@ -118,6 +119,7 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 		if elem, ok := model.GetElementById(k); ok {
 			if validator, ok := model.validators[elem.Type]; ok {
 				if !validator(elem, val) {
+					log.Printf("DEBUG failed to validate elem.Id %q, value %q", elem.Id, val)
 					return false	
 				}
 			} else {
