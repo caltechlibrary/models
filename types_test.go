@@ -37,4 +37,17 @@ func TestDatetimeLocal(t *testing.T) {
 	if ! ValidateDateTimeLocal(elem, val) {
 		t.Errorf("expected true, got false for value %q", val)
 	}
+	/*
+	  "created": "2024-10-03T13:30:28-07:00",
+  "family": "Jetson",
+  "lived": "George",
+  "orcid": "1234-4321-1234-4321",
+  "pid": "01925413-abc0-75c8-aa75-bfc062cd2949",
+  "updated": "2024-10-03T13:30:28-07:00"
+
+	*/
+  	val = "2024-10-03T13:30:28-07:00"
+	if ! ValidateDateTimeLocal(elem, val) {
+		t.Errorf("expected true, got false for value %q", val)
+	}
 }
