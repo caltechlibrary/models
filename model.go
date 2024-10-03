@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+var (
+	// Debug turns on verbose log output for model debugging
+	Debug bool
+)
+
 // RenderFunc is a function thation takes an io.Writer and Model then
 // renders the model into the io.Writer. It is used to extend the Model to
 // support various output formats.
@@ -81,6 +86,9 @@ func (model *Model) Validate(formData map[string]string) bool {
 		if elem, ok := model.GetElementById(k); ok {
 			if validator, ok := model.validators[elem.Type]; ok {
 				if !validator(elem, v) {
+					if Debug {
+						log.Printf("DEBUG failed to validate elem.Id %q, value %q", elem.Id, v)
+					}
 					return false
 				}
 			} else {
@@ -98,7 +106,9 @@ func (model *Model) Validate(formData map[string]string) bool {
 func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 	ids := model.GetElementIds()
 	if len(ids) != len(data) {
-		log.Printf("DEBUG expected len(ids) %d, got len(data) %d", len(ids), len(data))
+		if Debug {
+			log.Printf("DEBUG expected len(ids) %d, got len(data) %d", len(ids), len(data))
+		}
 		return false
 	}
 	for k, v := range data {
@@ -120,7 +130,9 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 		if elem, ok := model.GetElementById(k); ok {
 			if validator, ok := model.validators[elem.Type]; ok {
 				if !validator(elem, val) {
-					log.Printf("DEBUG failed to validate elem.Id %q, value %q", elem.Id, val)
+					if Debug {
+						log.Printf("DEBUG failed to validate elem.Id %q, value %q", elem.Id, val)
+					}
 					return false	
 				}
 			} else {

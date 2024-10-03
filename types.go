@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/json"
-	"log" // DEBUG
+	"log"
 	"net/mail"
 	"net/url"
 	"regexp"
@@ -30,12 +30,18 @@ func GenerateUUID() *Element {
 }
 
 func ValidateUUID(elem *Element, formValue string) bool {
-	log.Printf("DEBUG validating UUID\n")
+	if Debug {
+		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+	}
 	if _, err := uuid.Parse(formValue); err != nil {
-		log.Printf("DEBUG Faild to parse UUID")
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+		}
 		return false
 	}
-	log.Printf("DEBUG UUID OK\n")
+	if Debug {
+		log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
+	}
 	return true
 }
 
@@ -52,8 +58,17 @@ func GenerateDate() *Element {
 // ValidateDate makes sure the date string conforms to YYYY-MM-DD
 func ValidateDate(elem *Element, formValue string) bool {
 	// FIXME: Need to check against min, max and step values
+	if Debug {
+		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+	}
 	if _, err := time.Parse("2006-01-02", formValue); err != nil {
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
+		}
 		return false
+	}
+	if Debug {
+		log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
 	}
 	return true
 }
@@ -76,26 +91,50 @@ func ValidateDateTimeLocal(elem *Element, formValue string) bool {
 	if formValue == "" {
 		return true
 	}
+	if Debug {
+		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+	}
 	// If we have timezone info so handle as RFC3339 validation
 	if len(formValue) >= 20 {
 		if _, err := time.Parse(time.RFC3339, formValue); err != nil {
+			if Debug {
+				log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
+			}
 			return false
+		}
+		if Debug {
+			log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
 		}
 		return true
 	}
 	// Parse date component first
 	if _, err := time.Parse("2006-01-02", formValue[0:10]); err != nil {
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
+		}
 		return false
 	}
 	// String doesn't include the time so fail
 	if len(formValue) <= 10 {
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, "formValue length less than 10")
+		}
 		return false
 	}
 	if formValue[10:11] != "T" && formValue[10:11] != " " {
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, "missing T or space between date and time")
+		}
 		return false
 	}
 	if _, err := time.Parse("15:04:05", formValue[11:19]); err != nil {
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
+		}
 		return false
+	}
+	if Debug {
+		log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
 	}
 	return true
 }

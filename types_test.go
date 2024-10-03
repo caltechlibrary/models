@@ -6,6 +6,7 @@ import (
 )
 
 func TestValidateElementText(t *testing.T) {
+	// Debug = true
 	elem := new(Element)
 	elem.Id = "orcid"
 	elem.Type = "text"
@@ -18,6 +19,7 @@ func TestValidateElementText(t *testing.T) {
 }
 
 func TestORCIDRegExp(t *testing.T) {
+	// Debug = true
 	pattern := `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
 	re := regexp.MustCompilePOSIX(pattern)
 	orcid := `0000-0003-0900-6903`
@@ -27,6 +29,7 @@ func TestORCIDRegExp(t *testing.T) {
 }
 
 func TestDatetimeLocal(t *testing.T) {
+	// Debug = true
 	elem := new(Element)
 	elem.Id = "created"
 	elem.Type = "datetime-local"
@@ -53,6 +56,7 @@ func TestDatetimeLocal(t *testing.T) {
 }
 
 func TestUUID(t *testing.T) {
+	// Debug = true
 	elem := new(Element)
 	elem.Id = "pid"
 	elem.Type = "uuid"
