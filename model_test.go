@@ -277,4 +277,15 @@ elements:
 		t.Errorf("%+v failed to validate", formData)
 	}
 
+	formData = map[string]interface{}{
+		"created": "2024-10-03T13:25:24-07:00",
+		"family": "Jetson",
+		"lived":"George",
+		"orcid": "1234-4321-1234-4321",
+		"pid":"0192540f-0806-7631-b08f-4ae5c4d37cca",
+		"updated":"2024-10-03T13:25:24-07:00",
+	}
+	if ok := model.ValidateMapInterface(formData); ! ok {
+		t.Errorf("%+v failed to validate", formData)
+	}
 }
