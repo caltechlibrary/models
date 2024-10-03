@@ -89,7 +89,7 @@ func (model *Model) Validate(formData map[string]string) bool {
 			if validator, ok := model.validators[elem.Type]; ok {
 				if !validator(elem, v) {
 					if Debug {
-						log.Printf("DEBUG failed to validate elem.Id %q, value %q", elem.Id, v)
+						log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q", elem.Id, elem.Type, v)
 					}
 					return false
 				}
