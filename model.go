@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"regexp"
@@ -76,6 +77,40 @@ func (model *Model) Validate(formData map[string]string) bool {
 			if validator, ok := model.validators[elem.Type]; ok {
 				if !validator(elem, v) {
 					return false
+				}
+			} else {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
+}
+
+// ValidateMapInterface normalizes the map inteface values before calling
+// the element's validator function.
+func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
+	for k, v := range data {
+		var val string
+		switch v.(type) {
+		case string:
+			val = v.(string)
+		case int:
+			val = fmt.Sprintf("%d", v)
+		case float64:
+			val = fmt.Sprintf("%f", v)
+		case json.Number:
+			val = fmt.Sprintf("%s", v)
+		case bool:
+			val = fmt.Sprintf("%t", v)
+		default:
+			val = fmt.Sprintf("%+v", v)
+		}
+		if elem, ok := model.GetElementById(k); ok {
+			if validator, ok := model.validators[elem.Type]; ok {
+				if !validator(elem, val) {
+					return false	
 				}
 			} else {
 				return false
