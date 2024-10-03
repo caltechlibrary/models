@@ -1,4 +1,4 @@
-%modelgen(1) user manual | version 0.0.4 7eeeb74
+%modelgen(1) user manual | version 0.0.4 5661f6a
 % R. S. Doiel
 % 2024-10-03
 

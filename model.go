@@ -106,7 +106,7 @@ func (model *Model) Validate(formData map[string]string) bool {
 // ValidateMapInterface normalizes the map inteface values before calling
 // the element's validator function.
 func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
-	log.Printf("DEBUG models.Debug set to %t", Debug)
+	//log.Printf("DEBUG models.Debug set to %t", Debug)
 	ids := model.GetElementIds()
 	if len(ids) != len(data) {
 		if Debug {
@@ -139,9 +139,15 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 					return false	
 				}
 			} else {
+				if Debug {
+					log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing validator", elem.Id, val )
+				}
 				return false
 			}
 		} else {
+			if Debug {
+				log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing elemnt %q", elem.Id, val, k )
+			}
 			return false
 		}
 	}
