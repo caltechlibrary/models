@@ -25,3 +25,16 @@ func TestORCIDRegExp(t *testing.T) {
 		t.Errorf("expected true, got false for pattern %q and value %q", pattern, orcid)
 	}
 }
+
+func TestDatetimeLocal(t *testing.T) {
+	elem := new(Element)
+	elem.Id = "created"
+	elem.Type = "datetime-local"
+	elem.Generator = "created_timestamp"
+
+
+	val := "2024-10-03T12:51:01"
+	if ! ValidateDateTimeLocal(elem, val) {
+		t.Errorf("expected true, got false for value %q", val)
+	}
+}

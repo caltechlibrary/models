@@ -54,6 +54,13 @@ func ValidateDateTimeLocal(elem *Element, formValue string) bool {
 	if formValue == "" {
 		return true
 	}
+	// If we have timezone info so handle as RFC3339 validation
+	if len(formValue) >= 20 {
+		if _, err := time.Parse(time.RFC3339, formValue); err != nil {
+			return false
+		}
+		return true
+	}
 	// Parse date component first
 	if _, err := time.Parse("2006-01-02", formValue[0:10]); err != nil {
 		return false
@@ -62,17 +69,11 @@ func ValidateDateTimeLocal(elem *Element, formValue string) bool {
 	if len(formValue) <= 10 {
 		return false
 	}
-	if formValue[11:12] != "T" && formValue[11:12] != " " {
+	if formValue[10:11] != "T" && formValue[10:11] != " " {
 		return false
 	}
-	if _, err := time.Parse("19:54:00", formValue[12:19]); err != nil {
+	if _, err := time.Parse("15:04:05", formValue[11:19]); err != nil {
 		return false
-	}
-	// If we have timezone info
-	if len(formValue) >= 19 {
-		if _, err := time.Parse(time.RFC3339, formValue); err != nil {
-			return false
-		}
 	}
 	return true
 }

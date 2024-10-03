@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	// 3rd Party packages
+	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
 )
 
@@ -207,4 +208,73 @@ elements:
 	if ok := model.Validate(formData); ! ok {
 		t.Errorf("%+v failed to validate", formData)
 	}
+}
+
+func TestValidateMapInterface(t *testing.T) {
+    src := []byte(`id: test_validate_map_inteface
+description: This is a test of the validation code
+elements:
+  - id: pid
+    type: text
+    attributes:
+      name: pid
+      required: true
+    is_primary_id: true
+    label: Personal Identifier
+    generator: uuid
+  - id: lived
+    type: text
+    attributes:
+      name: lived
+      required: true
+    label: Lived Name
+  - id: family
+    type: text
+    attributes:
+      name: family
+      required: true
+    label: Family Name
+  - id: orcid
+    type: text
+    pattern: "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]"
+    attributes:
+      name: orcid
+      required: true
+    label: ORCID
+  - id: created
+    type: datetime-local
+    attributes:
+      required: true
+    label: created
+    generator: created_timestmap
+  - id: updated
+    type: datetime-local
+    attributes:
+      required: true
+    generator: current_timestamp
+`)
+	model, err := NewModel("test_model")
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	if err := yaml.Unmarshal(src, &model); err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	SetDefaultTypes(model)
+
+	pid := uuid.New()
+	formData := map[string]interface{}{
+		"pid": pid,
+		"lived": "Jane", 
+		"family": "Doe", 
+		"orcid": "0000-1111-2222-3333",
+		"created": "2024-10-03T12:40:00",
+		"updated": "2024-10-03 12:41:32",
+	}
+	if ok := model.ValidateMapInterface(formData); ! ok {
+		t.Errorf("%+v failed to validate", formData)
+	}
+
 }

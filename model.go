@@ -72,6 +72,10 @@ func (model *Model) GenElementType(typeName string) (*Element, bool) {
 
 // Validate form data expressed as map[string]string.
 func (model *Model) Validate(formData map[string]string) bool {
+	ids := model.GetElementIds()
+	if len(ids) != len(formData) {
+		return false
+	}
 	for k, v := range formData {
 		if elem, ok := model.GetElementById(k); ok {
 			if validator, ok := model.validators[elem.Type]; ok {
@@ -91,6 +95,10 @@ func (model *Model) Validate(formData map[string]string) bool {
 // ValidateMapInterface normalizes the map inteface values before calling
 // the element's validator function.
 func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
+	ids := model.GetElementIds()
+	if len(ids) != len(data) {
+		return false
+	}
 	for k, v := range data {
 		var val string
 		switch v.(type) {
