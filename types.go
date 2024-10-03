@@ -584,7 +584,7 @@ func ValidateORCID(elem *Element, formValue string) bool {
 	formValue = strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(formValue, "-", ""), " ", ""))
 	if ValidateISNI(elem, formValue) {
 		// Remove tailing check digit, then convert to integer
-		log.Printf("DEBUG formValue: %q -> formValue[0:len(formValue) -1]: %q", formValue, formValue[0:len(formValue)-1])
+		//log.Printf("DEBUG formValue: %q -> formValue[0:len(formValue) -1]: %q", formValue, formValue[0:len(formValue)-1])
 		val, err := strconv.Atoi(formValue[0 : len(formValue)-1])
 		if err != nil {
 			if Debug {
