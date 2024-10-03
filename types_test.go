@@ -26,6 +26,20 @@ func TestORCIDRegExp(t *testing.T) {
 	if ! re.MatchString(orcid) {
 		t.Errorf("expected true, got false for pattern %q and value %q", pattern, orcid)
 	}
+	elem := new (Element)
+	elem.Id = "orcid"
+	elem.Type = "orcid"
+	elem.Generator = ""
+	//SetDebug(true)
+	if ! ValidateORCID(elem, orcid) {
+		t.Errorf("expected orcid to validate true, got false")
+	}
+	// This isn't an valid ORCID throug it could be an INSI
+	orcid = `2345-5432-1234-4326`
+	if ValidateORCID(elem, orcid) {
+		t.Errorf("expected orcid to validate false, got true")
+	}
+	//SetDebug(false)
 }
 
 func TestDatetimeLocal(t *testing.T) {

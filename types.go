@@ -527,8 +527,14 @@ func GenerateISNI() *Element {
 }
 
 func ValidateISNI(elem *Element, formValue string) bool {
+	if Debug {
+		log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
+	}
 	formValue = strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(formValue, "-", ""), " ", ""))
 	if len(formValue) != 16 {
+		if Debug {
+			log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q: %s\n", elem.Id, elem.Type, formValue, "length != 16")
+		}
 		return false
 	}
 	r := 0
@@ -536,15 +542,24 @@ func ValidateISNI(elem *Element, formValue string) bool {
 	for pos := 0; pos < 15; pos++ {
 		x, err := strconv.Atoi(formValue[pos : pos+1])
 		if err != nil {
+			if Debug {
+				log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q: %s\n", elem.Id, elem.Type, formValue, err)
+			}
 			return false
 		}
 		r = (r + x) * 2
 	}
 	lastDigit, err := strconv.Atoi(formValue[len(formValue)-1:])
 	if err != nil {
+		if Debug {
+			log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q: %s\n", elem.Id, elem.Type, formValue, err)
+		}
 		return false
 	}
-	ck = ((12 - r) % 11) % 11
+	ck = (12 - r % 11) % 11
+	if Debug {
+		log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q\n, result: %t", elem.Id, elem.Type, formValue, (ck == lastDigit))
+	}
 	return ck == lastDigit
 }
 
@@ -559,6 +574,9 @@ func GenerateORCID() *Element {
 }
 
 func ValidateORCID(elem *Element, formValue string) bool {
+	if Debug {
+		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+	}
 	/* Based on https://idutils.readthedocs.io/en/latest/_modules/idutils.html#is_orcid */
 	if strings.HasPrefix(formValue, "https://orcid.org/") {
 		formValue = strings.TrimPrefix(formValue, "https://orcid.org/")
@@ -566,11 +584,21 @@ func ValidateORCID(elem *Element, formValue string) bool {
 	formValue = strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(formValue, "-", ""), " ", ""))
 	if ValidateISNI(elem, formValue) {
 		// Remove tailing check digit, then convert to integer
+		log.Printf("DEBUG formValue: %q -> formValue[0:len(formValue) -1]: %q", formValue, formValue[0:len(formValue)-1])
 		val, err := strconv.Atoi(formValue[0 : len(formValue)-1])
 		if err != nil {
+			if Debug {
+				log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
+			}
 			return false
 		}
+		if Debug  {
+			log.Printf("DEBUG testing orcid ranges: %t, elem.Id %q, elem.Type %q, value %q", (val >= 15000000) && (val <= 35000000), elem.Id, elem.Type, formValue)
+		}
 		return (val >= 15000000) && (val <= 35000000)
+	}
+	if Debug {
+		log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, "does not confirm to isni")
 	}
 	return false
 }
