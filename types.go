@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"log" // DEBUG
 	"net/mail"
 	"net/url"
 	"regexp"
@@ -29,9 +30,12 @@ func GenerateUUID() *Element {
 }
 
 func ValidateUUID(elem *Element, formValue string) bool {
+	log.Printf("DEBUG validating UUID\n")
 	if _, err := uuid.Parse(formValue); err != nil {
+		log.Printf("DEBUG Faild to parse UUID")
 		return false
 	}
+	log.Printf("DEBUG UUID OK\n")
 	return true
 }
 
