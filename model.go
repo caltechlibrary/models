@@ -15,6 +15,8 @@ var (
 	Debug bool
 )
 
+
+
 // RenderFunc is a function thation takes an io.Writer and Model then
 // renders the model into the io.Writer. It is used to extend the Model to
 // support various output formats.
@@ -537,4 +539,9 @@ func (model *Model) Define(typeName string, genElementFn GenElementFunc, validat
 		model.validators = map[string]ValidateFunc{}
 	}
 	model.validators[typeName] = validateFn
+}
+
+// SetDebug sets the model's Debug flag to debug
+func SetDebug(debug bool) {
+	Debug = debug
 }
