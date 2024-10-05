@@ -88,3 +88,17 @@ func TestUUID(t *testing.T) {
 		t.Errorf("expected true, got false for value %q",val)
 	}
 }
+
+func TestROR(t *testing.T) {
+	elem := new(Element)
+	elem.Id = "ror"
+	elem.Type = "ror"
+	val := `https://ror.org/05dxps055`
+	if ! ValidateROR(elem, val) {
+		t.Errorf("expected ValidateROR(elem, %q) to return true, return false", val)
+	}
+	val = `05dxps055`
+	if ! ValidateROR(elem, val) {
+		t.Errorf("expected ValidateROR(elem, %q) to return true, return false", val)
+	}
+}

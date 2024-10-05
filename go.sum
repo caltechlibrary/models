@@ -1,3 +1,5 @@
+github.com/Dancapistan/gobase32 v0.0.0-20131203192308-203acd9f6b68 h1:gB3vS7YyLKvir5bHgJTiSfQEiKeOydjhWYz1V4QwJDU=
+github.com/Dancapistan/gobase32 v0.0.0-20131203192308-203acd9f6b68/go.mod h1:/v3Vzrc/kaa8/gDdSXaGZCCl0aRYWW+3SDTScZ1T9/s=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/nyaruka/phonenumbers v1.4.0 h1:ddhWiHnHCIX3n6ETDA58Zq5dkxkjlvgrDWM2OHHPCzU=

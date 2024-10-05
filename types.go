@@ -13,11 +13,60 @@ import (
 	// 3rd Party packages
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
+	gobase32 "github.com/Dancapistan/gobase32"
 )
 
 const (
 	OrcidPattern = `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
+	RORPattern = `^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$`
+	ISNIPattern = `[0-9]{4} [0-9]{4} [0-9]{4] [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4]-[0-9X]{4}`
 )
+
+var (
+	ReORCID *regexp.Regexp
+	ReROR *regexp.Regexp
+	ReISNI *regexp.Regexp
+)
+
+// GenerateROR setups up for an HTML ROR type input element
+func GenerateROR() *Element {
+	return &Element{
+		Type: "text",
+		Pattern: RORPattern,
+		Attributes:map[string]string{
+			"placeholder": "enter a uuid",
+		},
+	}
+}
+
+// Validate ROR form element
+func ValidateROR(elem *Element, formValue string) bool {
+	if Debug {
+		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+	}
+	if strings.HasPrefix(formValue, "https://ror.org/") {
+
+		formValue = strings.TrimPrefix(formValue, "https://ror.org/")
+	}
+	if ! ReROR.MatchString(formValue) {
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+		}
+		return false
+	}
+	crockford32 := gobase32.Base32(formValue)
+	if _, err := crockford32.Decode(); err  != nil { 
+		if Debug {
+			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+		}
+		return false
+	}
+	if Debug {
+		log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
+	}
+	return true
+}
+
 
 // GenerateUUID setups up for an HTML uuid type input element
 func GenerateUUID() *Element {
@@ -520,7 +569,7 @@ func GenerateISNI() *Element {
 	return &Element{
 		Type: "text",
 		Attributes: map[string]string{
-			"pattern":     "[0-9]{4} [0-9]{4} [0-9]{4] [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4]-[0-9X]{4}",
+			"pattern":   ISNIPattern,
 			"placeholder": "e.g. 1111 2222 3333 444X",
 		},
 	}
@@ -604,6 +653,7 @@ func ValidateORCID(elem *Element, formValue string) bool {
 }
 
 func SetDefaultTypes(model *Model) {
+
 	model.Define("date", GenerateDate, ValidateDate)
 	model.Define("datetime-local", GenerateDateTimeLocal, ValidateDateTimeLocal)
 	model.Define("month", GenerateMonth, ValidateMonth)
@@ -621,7 +671,9 @@ func SetDefaultTypes(model *Model) {
 	model.Define("textarea", GenerateTextarea, ValidateTextarea)
 	model.Define("orcid", GenerateORCID, ValidateORCID)
 	model.Define("isni", GenerateISNI, ValidateISNI)
-	model.Define("uuid", GenerateISNI, ValidateISNI)
+	model.Define("uuid", GenerateUUID, ValidateUUID)
+	model.Define("ror", GenerateROR, ValidateROR)
+
 	// NOTE: The following are not in the default but their usefulness
 	// in the context of persisting data is not clear.
 	//
@@ -631,4 +683,10 @@ func SetDefaultTypes(model *Model) {
 	//model.Define("button", ValidateButton)
 	//model.Define("week", ValidateWeek)
 	//model.Define("image", ValidateImage)
+}
+
+func init() {
+	ReORCID = regexp.MustCompilePOSIX(OrcidPattern)
+	ReROR = regexp.MustCompilePOSIX(RORPattern)
+	ReISNI = regexp.MustCompilePOSIX(ISNIPattern)
 }
