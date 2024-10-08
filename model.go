@@ -233,7 +233,10 @@ func (m *Model) GetPrimaryId() string {
 func (m *Model) GetGeneratedTypes() map[string]string {
 	gt := map[string]string{}
 	if m == nil {
-		log.Fatal("WARNING: uninitialized model in call GetGeneratedTypes")
+		if Debug {
+			log.Printf("DEBUG: uninitialized model in call GetGeneratedTypes()")
+		}
+		return gt
 	}
 	if m.Elements != nil {
 		for _, elem := range m.Elements {
