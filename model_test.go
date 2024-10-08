@@ -289,3 +289,11 @@ elements:
 		t.Errorf("%+v failed to validate", formData)
 	}
 }
+
+func TestModelElements(t *testing.T) {
+	m := new(Model)
+	modelTypes := m.GetGeneratedTypes()
+	if len(modelTypes) != 0 {
+		t.Errorf("expected zero model types, got %+v", modelTypes)
+	}
+}
