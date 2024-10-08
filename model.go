@@ -15,8 +15,6 @@ var (
 	Debug bool
 )
 
-
-
 // RenderFunc is a function thation takes an io.Writer and Model then
 // renders the model into the io.Writer. It is used to extend the Model to
 // support various output formats.
@@ -136,17 +134,17 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 					if Debug {
 						log.Printf("DEBUG failed to validate elem.Id %q, value %q", elem.Id, val)
 					}
-					return false	
+					return false
 				}
 			} else {
 				if Debug {
-					log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing validator", elem.Id, val )
+					log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing validator", elem.Id, val)
 				}
 				return false
 			}
 		} else {
 			if Debug {
-				log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing elemnt %q", elem.Id, val, k )
+				log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing elemnt %q", elem.Id, val, k)
 			}
 			return false
 		}
@@ -232,20 +230,10 @@ func (m *Model) GetPrimaryId() string {
 // GetGeneratedTypes returns a map of elemend id and value held by .Generator
 func (m *Model) GetGeneratedTypes() map[string]string {
 	gt := map[string]string{}
-	if m == nil {
-		if Debug {
-			log.Printf("DEBUG: uninitialized model in call GetGeneratedTypes()")
+	for _, elem := range m.Elements {
+		if elem.Generator != "" {
+			gt[elem.Id] = elem.Generator
 		}
-		return gt
-	}
-	if m.Elements != nil {
-		for _, elem := range m.Elements {
-			if elem.Generator != "" {
-				gt[elem.Id] = elem.Generator
-			}
-		}	
-	} else if Debug {
-		log.Printf("DEBUG m.Elements is nil, called from GetGeneratedTypes()")
 	}
 	return gt
 }
