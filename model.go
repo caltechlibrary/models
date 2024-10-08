@@ -238,6 +238,8 @@ func (m *Model) GetGeneratedTypes() map[string]string {
 				gt[elem.Id] = elem.Generator
 			}
 		}	
+	} else if Debug {
+		log.Printf("DEBUG m.Elements is nil, called from GetGeneratedTypes()")
 	}
 	return gt
 }
