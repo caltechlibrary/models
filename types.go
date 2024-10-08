@@ -44,6 +44,9 @@ func ValidateROR(elem *Element, formValue string) bool {
 	if Debug {
 		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
 	}
+	if formValue == "" {
+		return true
+	}
 	if strings.HasPrefix(formValue, "https://ror.org/") {
 		formValue = strings.TrimPrefix(formValue, "https://ror.org/")
 	}
@@ -53,15 +56,7 @@ func ValidateROR(elem *Element, formValue string) bool {
 		}
 		return false
 	}
-	/*
-	crockford32 := gobase32.Base32(formValue)
-	if _, err := crockford32.Decode(); err  != nil { 
-		if Debug {
-			log.Printf("DEBUG failed to validate crockford32 elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
-		}
-		return false
-	}
-	*/
+	/*FIXME: Need to figure out how to validate (or unencode) the Crockford base 32 value */
 	if Debug {
 		log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
 	}
@@ -82,6 +77,9 @@ func GenerateUUID() *Element {
 func ValidateUUID(elem *Element, formValue string) bool {
 	if Debug {
 		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+	}
+	if formValue == "" {
+		return true
 	}
 	if _, err := uuid.Parse(formValue); err != nil {
 		if Debug {
@@ -107,6 +105,9 @@ func GenerateDate() *Element {
 
 // ValidateDate makes sure the date string conforms to YYYY-MM-DD
 func ValidateDate(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
 	// FIXME: Need to check against min, max and step values
 	if Debug {
 		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
@@ -136,6 +137,9 @@ func GenerateDateTimeLocal() *Element {
 // ValidateDateTimeLocal makes sure the datetime string conforms to
 // Spec: https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#valid-local-date-and-time-string
 func ValidateDateTimeLocal(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
 	// FIXME: Need to check against min, max and step values
 	// See https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#valid-local-date-and-time-string for validation steps
 	if formValue == "" {
@@ -580,6 +584,9 @@ func ValidateISNI(elem *Element, formValue string) bool {
 	if Debug {
 		log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
 	}
+	if formValue == "" {
+		return true
+	}
 	formValue = strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(formValue, "-", ""), " ", ""))
 	if len(formValue) != 16 {
 		if Debug {
@@ -627,6 +634,9 @@ func ValidateORCID(elem *Element, formValue string) bool {
 	if Debug {
 		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
 	}
+	if formValue == "" {
+		return true
+	}
 	/* Based on https://idutils.readthedocs.io/en/latest/_modules/idutils.html#is_orcid */
 	if strings.HasPrefix(formValue, "https://orcid.org/") {
 		formValue = strings.TrimPrefix(formValue, "https://orcid.org/")
@@ -654,7 +664,6 @@ func ValidateORCID(elem *Element, formValue string) bool {
 }
 
 func SetDefaultTypes(model *Model) {
-
 	model.Define("date", GenerateDate, ValidateDate)
 	model.Define("datetime-local", GenerateDateTimeLocal, ValidateDateTimeLocal)
 	model.Define("month", GenerateMonth, ValidateMonth)

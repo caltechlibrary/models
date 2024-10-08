@@ -136,7 +136,7 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 					}
 					return false
 				}
-			} else {
+			}  else {
 				if Debug {
 					log.Printf("DEBUG failed to validate elem.Id %q, value %q, missing validator", elem.Id, val)
 				}

@@ -262,6 +262,7 @@ elements:
 		t.Error(err)
 		t.FailNow()
 	}
+	//Debug = true
 	SetDefaultTypes(model)
 
 	pid := uuid.New()
