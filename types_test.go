@@ -93,6 +93,7 @@ func TestROR(t *testing.T) {
 	elem := new(Element)
 	elem.Id = "ror"
 	elem.Type = "ror"
+	SetDebug(true);
 	val := `https://ror.org/05dxps055`
 	if ! ValidateROR(elem, val) {
 		t.Errorf("expected ValidateROR(elem, %q) to return true, return false", val)
@@ -101,4 +102,5 @@ func TestROR(t *testing.T) {
 	if ! ValidateROR(elem, val) {
 		t.Errorf("expected ValidateROR(elem, %q) to return true, return false", val)
 	}
+	SetDebug(false);
 }

@@ -232,10 +232,12 @@ func (m *Model) GetPrimaryId() string {
 // GetGeneratedTypes returns a map of elemend id and value held by .Generator
 func (m *Model) GetGeneratedTypes() map[string]string {
 	gt := map[string]string{}
-	for _, elem := range m.Elements {
-		if elem.Generator != "" {
-			gt[elem.Id] = elem.Generator
-		}
+	if m.Elements != nil {
+		for _, elem := range m.Elements {
+			if elem.Generator != "" {
+				gt[elem.Id] = elem.Generator
+			}
+		}	
 	}
 	return gt
 }

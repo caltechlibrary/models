@@ -13,7 +13,7 @@ import (
 	// 3rd Party packages
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
-	gobase32 "github.com/Dancapistan/gobase32"
+
 )
 
 const (
@@ -45,22 +45,23 @@ func ValidateROR(elem *Element, formValue string) bool {
 		log.Printf("DEBUG validating elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
 	}
 	if strings.HasPrefix(formValue, "https://ror.org/") {
-
 		formValue = strings.TrimPrefix(formValue, "https://ror.org/")
 	}
 	if ! ReROR.MatchString(formValue) {
 		if Debug {
-			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+			log.Printf("DEBUG failed to validate pattern elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
 		}
 		return false
 	}
+	/*
 	crockford32 := gobase32.Base32(formValue)
 	if _, err := crockford32.Decode(); err  != nil { 
 		if Debug {
-			log.Printf("DEBUG failed to validate elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
+			log.Printf("DEBUG failed to validate crockford32 elem.Id %q, elem.Type %q, value %q: %s \n", elem.Id, elem.Type, formValue, err)
 		}
 		return false
 	}
+	*/
 	if Debug {
 		log.Printf("DEBUG OK, elem.Id %q, elem.Type %q, value %q\n", elem.Id, elem.Type, formValue)
 	}
