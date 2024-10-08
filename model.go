@@ -232,6 +232,9 @@ func (m *Model) GetPrimaryId() string {
 // GetGeneratedTypes returns a map of elemend id and value held by .Generator
 func (m *Model) GetGeneratedTypes() map[string]string {
 	gt := map[string]string{}
+	if m == nil {
+		log.Fatal("WARNING: uninitialized model in call GetGeneratedTypes")
+	}
 	if m.Elements != nil {
 		for _, elem := range m.Elements {
 			if elem.Generator != "" {
