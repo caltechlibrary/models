@@ -1,6 +1,6 @@
-%modelgen(1) user manual | version 0.0.4 5ec1c48
+%modelgen(1) user manual | version 0.0.4 957da58
 % R. S. Doiel
-% 2024-10-08
+% 2024-10-09
 
 # NAME
 
@@ -37,6 +37,12 @@ then the YAML is read from standard input.
 
 sqlite
 : This action will render a SQL file suitable for use with SQLite 3.
+
+typescript
+: This action will render a TypeScript class definition
+
+python
+: This action with render a Python class definition
 
 # OPTIONS
 

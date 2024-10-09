@@ -58,6 +58,12 @@ then the YAML is read from standard input.
 sqlite
 : This action will render a SQL file suitable for use with SQLite 3.
 
+typescript
+: This action will render a TypeScript class definition
+
+python
+: This action with render a Python class definition
+
 # OPTIONS
 
 -help
@@ -239,6 +245,8 @@ func main() {
 	model.Register("html", models.ModelToHTML)
 	model.Register("sqlite", models.ModelToSQLiteScheme)
 	model.Register("sqlite3", models.ModelToSQLiteScheme)
+	model.Register("typescript", models.ModelToTypeScriptClass)
+	model.Register("python", models.ModelToPythonClass)
 	if err := model.Render(out, verb); err != nil {
 		fmt.Fprintf(eout, "ERROR: %s\n", err)
 		os.Exit(1)
