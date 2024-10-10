@@ -50,7 +50,7 @@ func normalizeInputType(inputType string) (string, string) {
 		// This is where we put the aliases to common regexp validated patterns
 		"orcid": "[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]",
 	}
-	val := strings.TrimSpace(strings.ToLower(inputType))
+	val := strings.ToLower(inputType)
 	if pattern, ok := patternMap[val]; ok {
 		return val, pattern
 	}
@@ -239,7 +239,7 @@ func modifySelectElementTUI(elem *Element, in io.Reader, out io.Writer, eout io.
 				fmt.Fprintf(out, "Enter an option value: ")
 				val = prompt.GetAnswer("", true)
 			} else {
-				val = strings.TrimSpace(opt)
+				val = opt
 			}
 			if val == "" {
 				fmt.Fprintf(eout, "Error, an option value required\n")
@@ -378,7 +378,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 				opt = prompt.GetAnswer("", false)
 			}
 			if opt != "" {
-				eType := strings.TrimSpace(opt)
+				eType := opt
 				if ok := model.IsSupportedElementType(eType); !ok {
 					fmt.Fprintf(eout, "%q is not a supported element type", opt)
 				} else {
@@ -403,7 +403,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 				if opt == "*" {
 					elem.Pattern = ""
 				} else {
-					elem.Pattern = strings.TrimSpace(opt)
+					elem.Pattern = opt
 				}
 				model.Changed(true)
 			}
@@ -415,7 +415,7 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 			if opt != "" {
 				// NOTE: remove a pattern by having it match everything, i.e. astrix
 				if opt != elem.Label {
-					elem.Label = strings.TrimSpace(opt)
+					elem.Label = opt
 				}
 				model.Changed(true)
 			}
@@ -434,12 +434,17 @@ func modifyElementTUI(model *Model, in io.Reader, out io.Writer, eout io.Writer,
 			}
 		case "g":
 			if opt == "" {
-				fmt.Fprintf(out, "Enter generator (e.g. autoincrement, uuid, current_timestamp, created_timestamp)")
+				fmt.Fprintf(out, "Enter generator (e.g. autoincrement, uuid, current_timestamp, created_timestamp, current_date, created_date) ")
 				opt = prompt.GetAnswer("", true)
 			}
+			fmt.Fprintf(out, "DEBUG opt -> %q, elem.Generator -> %q\n", opt, elem.Generator)
 			if opt != "" {
-				if opt != elem.Generator {
-					elem.Generator = strings.TrimSpace(opt)
+				if strings.HasPrefix(opt, "\"") || strings.HasPrefix(opt, "'") {
+					elem.Generator = ""
+					fmt.Fprintf(out, "DEBUG opt -> %q, elem.Generator -> %q\n", opt, elem.Generator)
+					elem.Changed(true)
+				} else if opt != elem.Generator {
+					elem.Generator = opt
 					elem.Changed(true)
 				}
 			}

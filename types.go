@@ -687,12 +687,12 @@ func SetDefaultTypes(model *Model) {
 	// NOTE: The following are not in the default but their usefulness
 	// in the context of persisting data is not clear.
 	//
-	//model.Define("search", DefeaultSearch, ValidateSearch)
-	//model.Define("reset", ValidateReset)
-	//model.Define("submit", ValidateSubmit)
-	//model.Define("button", ValidateButton)
-	//model.Define("week", ValidateWeek)
-	//model.Define("image", ValidateImage)
+	//model.Define("search", GenerateSearch, ValidateSearch)
+	//model.Define("reset", GenerateReset, ValidateReset)
+	//model.Define("submit", GenerateSubmit, ValidateSubmit)
+	//model.Define("button", GenerateButton, ValidateButton)
+	//model.Define("week", GenerateWeek, ValidateWeek)
+	//model.Define("image", GenerateImage, ValidateImage)
 }
 
 func init() {

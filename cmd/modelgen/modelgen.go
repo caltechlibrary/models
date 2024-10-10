@@ -202,7 +202,9 @@ func main() {
 						os.Exit(7)
 					}
 				}
-				if err := model.Render(fout, "yaml"); err != nil {
+				encoder := yaml.NewEncoder(fout)
+				encoder.SetIndent(2)
+				if err := encoder.Encode(model); err != nil {
 					fmt.Fprintf(eout, "ERROR: %s\n", err)
 					os.Exit(8)
 				}

@@ -56,7 +56,7 @@ func mapTypeToPythonDefault(elem *Element) string {
 		"tel":            "",
 		"time":           "",
 		"url":            "",
-		"checkbox":       "",
+		"checkbox":       "false",
 		"password":       "",
 		"radio":          "",
 		"textarea":       "",

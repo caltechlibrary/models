@@ -20,9 +20,9 @@ Model: %s
 
 `, model.Id, model.Description)
 
-	className := strings.ToTitle(model.Id)
+	className := model.Id
 	if len(className) > 1 {
-		className = strings.ToUpper(className[0:1])  + strings.ToUpper(className[1:])
+		className = strings.ToUpper(className[0:1])  + className[1:]
 	} else {
 		className = strings.ToUpper(className)
 	}
@@ -45,6 +45,14 @@ export class %s implements %s {
 	for _, elem := range model.Elements {
 		varName := elem.Id
 		varType := mapTypeToTypeScript(elem)
+		switch varType {
+			case "string":
+				varType = "string = \"\""
+			case "number":
+				varType = "number = 0.0"
+			case "boolean":
+				varType = "boolean = false"
+		}
 		fmt.Fprintf(out, "\t%s: %s;\n", varName, varType)
 	}
 	fmt.Fprintln(out, `}
@@ -55,16 +63,16 @@ export class %s implements %s {
 
 func mapTypeToTypeScript(elem *Element) string {
 	dTypes := map[string]string{
-		"date":           "Date",
-		"datetime-local": "Date",
-		"month":          "Date",
+		"date":           "string",
+		"datetime-local": "string",
+		"month":          "string",
 		"color":          "string",
 		"email":          "string",
 		"number":         "number",
-		"range":          "[]",
+		"range":          "number[]",
 		"text":           "string",
 		"tel":            "string",
-		"time":           "Date",
+		"time":           "string",
 		"url":            "string",
 		"checkbox":       "boolean",
 		"password":       "string",

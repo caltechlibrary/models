@@ -42,6 +42,8 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 			columnType = "text"
 		case "datetime-local":
 			columnType = "text"
+		case "checkbox":
+			columnType = "boolean"
 		default:
 			columnType = "text"
 		}
@@ -49,6 +51,12 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 			switch elem.Generator {
 			case "autoincrement":
 				columnType = fmt.Sprintf("%s autoincrement", columnType)
+			case "date":
+				columnType = fmt.Sprintf("%s default current_date not null", columnType)
+			case "created_date":
+				columnType = fmt.Sprintf("%s default current_date not null", columnType)
+			case "current_date":
+				columnType = fmt.Sprintf("%s default current_date not null", columnType)
 			case "timestamp":
 				columnType = fmt.Sprintf("%s default current_timestamp not null", columnType)
 			case "created_timestamp":

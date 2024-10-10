@@ -13,9 +13,7 @@ The models package includes a demonstration program called `modelgen`. We'll use
 
 ## Generating our model YAML file
 
-This is done using the `modelgen` command line program providing the "model" action along with a YAML filename to create (e.g. "guestbook.yaml")
-The "model" action is interactive. You will be presented with a series of text menus. Pressing the enter key without selecting a menu choice will
-move you to the next menu step.  Most menus you will either type a single letter or digit to then be prompted to complete the task.
+This is done using the `modelgen` command line program providing the "model" action along with a YAML filename to create (e.g. "guestbook.yaml"). The "model" action is interactive. You will be presented with a series of text menus. Pressing the enter key without selecting a menu choice will move you to the next menu step.  Most menus you will either type a single letter or digit to then be prompted to complete the task.
 
 ~~~
 modelgen model guestbook.yaml
@@ -129,8 +127,7 @@ Manage guestbook.name element
 Choices [t]ype, [l]abel, [o]bject identifier, [p]attern, [a]ttributes, or press enter when done
 ~~~
 
-You are now able to modify the "name" element.  To make an element required we want to add `require="true"` to
-the attribute list.  Type "a" and press enter". You should see something like this.
+You are now able to modify the "name" element.  To make an element required we want to add `require="true"` to the attribute list.  Type "a" and press enter". You should see something like this.
 
 ~~~
 a
@@ -162,8 +159,7 @@ Modify element guestbook.name attributes
 Choices [a]dd, [m]odify, [r]emove or press enter when done
 ~~~
 
-The name attribute is now a required element.  If we press enter again
-you should see the full element description.
+The name attribute is now a required element.  If we press enter again you should see the full element description.
 
 ~~~
 Manage guestbook.name element
@@ -198,8 +194,7 @@ If you reply "y" then enter or just press enter it'll save the changes and exit 
 
 We've created our first model YAML file.
 
-You can see the model using the `cat` command on macOS and Linux or the `type` command on Windows.
-Your guestbook.yaml should look something like this.
+You can see the model using the `cat` command on macOS and Linux or the `type` command on Windows. Your guestbook.yaml should look something like this.
 
 ~~~yaml
 id: guestbook
