@@ -104,7 +104,12 @@ func (model *Model) Validate(formData map[string]string) bool {
 // ValidateMapInterface normalizes the map inteface values before calling
 // the element's validator function.
 func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
-	//log.Printf("DEBUG models.Debug set to %t", Debug)
+	if model == nil {
+		if Debug {
+			log.Printf("model is nil, can't validate")
+		}
+		return false
+	}
 	ids := model.GetElementIds()
 	if len(ids) != len(data) {
 		if Debug {
