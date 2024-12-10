@@ -10,6 +10,9 @@ import (
 // This package renders Python classes from a Model
 //
 
+// ModelToPythonClass renders a model as a Python class
+// @param out: io.Writer, where you rending the model text into
+// @param model: *Model, the model to be rendered
 func ModelToPythonClass(out io.Writer, model *Model) error {
 	// Include model.Id and model.Description as an opening comment.
 	fmt.Fprintf(out, `#
@@ -22,7 +25,7 @@ func ModelToPythonClass(out io.Writer, model *Model) error {
 
 	className := model.Id
 	if len(className) > 1 {
-		className = strings.ToUpper(className[0:1])  + className[1:]
+		className = strings.ToUpper(className[0:1]) + className[1:]
 	} else {
 		className = strings.ToUpper(className)
 	}

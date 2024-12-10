@@ -13,28 +13,27 @@ import (
 	// 3rd Party packages
 	"github.com/google/uuid"
 	"github.com/nyaruka/phonenumbers"
-
 )
 
 const (
 	OrcidPattern = `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
-	RORPattern = `^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$`
-	ISNIPattern = `[0-9]{4} [0-9]{4} [0-9]{4] [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4]-[0-9X]{4}`
+	RORPattern   = `^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$`
+	ISNIPattern  = `[0-9]{4} [0-9]{4} [0-9]{4] [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4]-[0-9X]{4}`
 )
 
 var (
 	ReORCID *regexp.Regexp
-	ReROR *regexp.Regexp
-	ReISNI *regexp.Regexp
+	ReROR   *regexp.Regexp
+	ReISNI  *regexp.Regexp
 )
 
 // GenerateROR setups up for an HTML ROR type input element
 func GenerateROR() *Element {
 	return &Element{
-		Type: "text",
+		Type:    "text",
 		Pattern: RORPattern,
-		Attributes:map[string]string{
-			"placeholder": "enter a uuid",
+		Attributes: map[string]string{
+			"placeholder": "enter a ROR",
 		},
 	}
 }
@@ -50,7 +49,7 @@ func ValidateROR(elem *Element, formValue string) bool {
 	if strings.HasPrefix(formValue, "https://ror.org/") {
 		formValue = strings.TrimPrefix(formValue, "https://ror.org/")
 	}
-	if ! ReROR.MatchString(formValue) {
+	if !ReROR.MatchString(formValue) {
 		if Debug {
 			log.Printf("DEBUG failed to validate pattern elem.Id %q, elem.Type %q, value %q \n", elem.Id, elem.Type, formValue)
 		}
@@ -63,12 +62,11 @@ func ValidateROR(elem *Element, formValue string) bool {
 	return true
 }
 
-
 // GenerateUUID setups up for an HTML uuid type input element
 func GenerateUUID() *Element {
 	return &Element{
 		Type: "text",
-		Attributes:map[string]string{
+		Attributes: map[string]string{
 			"placeholder": "enter a uuid",
 		},
 	}
@@ -266,11 +264,11 @@ func ValidateText(elem *Element, formValue string) bool {
 		return true
 	}
 	/*
-	re, err := regexp.CompilePOSIX(elem.Pattern)
-	if err != nil {
-		return false
-	}
-	return re.MatchString(formValue)
+		re, err := regexp.CompilePOSIX(elem.Pattern)
+		if err != nil {
+			return false
+		}
+		return re.MatchString(formValue)
 	*/
 	re := regexp.MustCompilePOSIX(elem.Pattern)
 	return re.MatchString(formValue)
@@ -574,7 +572,7 @@ func GenerateISNI() *Element {
 	return &Element{
 		Type: "text",
 		Attributes: map[string]string{
-			"pattern":   ISNIPattern,
+			"pattern":     ISNIPattern,
 			"placeholder": "e.g. 1111 2222 3333 444X",
 		},
 	}
@@ -613,7 +611,7 @@ func ValidateISNI(elem *Element, formValue string) bool {
 		}
 		return false
 	}
-	ck = (12 - r % 11) % 11
+	ck = (12 - r%11) % 11
 	if Debug {
 		log.Printf("DEBUG validating isni elem.Id %q, elem.Type %q, value %q\n, result: %t", elem.Id, elem.Type, formValue, (ck == lastDigit))
 	}
@@ -652,7 +650,7 @@ func ValidateORCID(elem *Element, formValue string) bool {
 			}
 			return false
 		}
-		if Debug  {
+		if Debug {
 			log.Printf("DEBUG testing orcid ranges: %t, elem.Id %q, elem.Type %q, value %q", (val >= 15000000) && (val <= 35000000), elem.Id, elem.Type, formValue)
 		}
 		return (val >= 15000000) && (val <= 35000000)

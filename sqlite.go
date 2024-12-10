@@ -6,8 +6,11 @@ import (
 	"strings"
 )
 
+// ModelToSQLiteScheme takess a model and renders the SQLite DB Schema to out.
+// @param out: io.Writer, the target to render the text into
+// @param model: *Model, the model to be rendered.
 func ModelToSQLiteScheme(out io.Writer, model *Model) error {
-	if ! IsValidVarname(model.Id) {
+	if !IsValidVarname(model.Id) {
 		return fmt.Errorf("model id that can't be used for table name, %q", model.Id)
 	}
 	if model.Description != "" {
@@ -15,8 +18,8 @@ func ModelToSQLiteScheme(out io.Writer, model *Model) error {
 	}
 	fmt.Fprintf(out, "create table %s if not exists (\n", model.Id)
 	addNL := false
-    for i, elem := range model.Elements {
-		if ! IsValidVarname(elem.Id) {
+	for i, elem := range model.Elements {
+		if !IsValidVarname(elem.Id) {
 			return fmt.Errorf("element id can't be used for column name, %q", elem.Id)
 		}
 		if i > 0 {

@@ -159,7 +159,7 @@ func modifyElementAttributesTUI(model *Model, in io.Reader, out io.Writer, eout 
 		if len(menu) > 0 {
 			menu = menu[0:1]
 		}
-		if i := strings.Index(opt, " "); i >= 0  {
+		if i := strings.Index(opt, " "); i >= 0 {
 			opt, val = opt[0:i], opt[i+1:]
 		}
 		opt, ok = getIdFromList(attributeList, opt)
@@ -592,10 +592,10 @@ func ModelInteractively(model *Model) error {
 		return err
 	}
 	/*
-	// Manage Model Attributes
-	if err := modifyModelAttributesTUI(model, in, out, eout); err != nil {
-		return err
-	}
+		// Manage Model Attributes
+		if err := modifyModelAttributesTUI(model, in, out, eout); err != nil {
+			return err
+		}
 	*/
 	// Manage Model Elements
 	if err := modifyElementsTUI(model, in, out, eout); err != nil {

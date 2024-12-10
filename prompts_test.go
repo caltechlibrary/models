@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TestGetAnswers tests the interactive prompting methods.
 func TestGetAnswers(t *testing.T) {
 	txt := "a required true"
 	in := bytes.NewBuffer([]byte(txt))

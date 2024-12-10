@@ -10,6 +10,10 @@ import (
 // This package renders TypeScript classes from a Model
 //
 
+// ModelToTypeScriptClass render a model as TypeScript interface and class
+// @param out : io.Writer, where the generated code is written
+// @param model : *Model, the model to render as TypeScript.
+// @return error or nil (on success)
 func ModelToTypeScriptClass(out io.Writer, model *Model) error {
 	// Include model.Id and model.Description as an opening comment.
 	fmt.Fprintf(out, `/*
@@ -22,7 +26,7 @@ Model: %s
 
 	className := model.Id
 	if len(className) > 1 {
-		className = strings.ToUpper(className[0:1])  + className[1:]
+		className = strings.ToUpper(className[0:1]) + className[1:]
 	} else {
 		className = strings.ToUpper(className)
 	}
@@ -46,12 +50,12 @@ export class %s implements %s {
 		varName := elem.Id
 		varType := mapTypeToTypeScript(elem)
 		switch varType {
-			case "string":
-				varType = "string = \"\""
-			case "number":
-				varType = "number = 0.0"
-			case "boolean":
-				varType = "boolean = false"
+		case "string":
+			varType = "string = \"\""
+		case "number":
+			varType = "number = 0.0"
+		case "boolean":
+			varType = "boolean = false"
 		}
 		fmt.Fprintf(out, "\t%s: %s;\n", varName, varType)
 	}

@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// TestVAlidateElementText, checks the validation code
 func TestValidateElementText(t *testing.T) {
 	// Debug = true
 	elem := new(Element)
@@ -21,6 +22,7 @@ func TestValidateElementText(t *testing.T) {
 	}
 }
 
+// TestORCIDRegExp tests the ORCID validation code
 func TestORCIDRegExp(t *testing.T) {
 	// Debug = true
 	pattern := `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
@@ -49,6 +51,7 @@ func TestORCIDRegExp(t *testing.T) {
 	//SetDebug(false)
 }
 
+// TestDatetimeLocal tests the "datetime-local" structure
 func TestDatetimeLocal(t *testing.T) {
 	// Debug = true
 	elem := new(Element)
@@ -61,12 +64,12 @@ func TestDatetimeLocal(t *testing.T) {
 		t.Errorf("expected true, got false for value %q", val)
 	}
 	/*
-		  "created": "2024-10-03T13:30:28-07:00",
-	  "family": "Jetson",
-	  "lived": "George",
-	  "orcid": "1234-4321-1234-4321",
-	  "pid": "01925413-abc0-75c8-aa75-bfc062cd2949",
-	  "updated": "2024-10-03T13:30:28-07:00"
+			  "created": "2024-10-03T13:30:28-07:00",
+		  "family": "Jetson",
+		  "lived": "George",
+		  "orcid": "1234-4321-1234-4321",
+		  "pid": "01925413-abc0-75c8-aa75-bfc062cd2949",
+		  "updated": "2024-10-03T13:30:28-07:00"
 
 	*/
 	val = "2024-10-03T13:30:28-07:00"
@@ -75,6 +78,7 @@ func TestDatetimeLocal(t *testing.T) {
 	}
 }
 
+// TestUUID tests UUID generation
 func TestUUID(t *testing.T) {
 	// Debug = true
 	elem := new(Element)
@@ -91,6 +95,7 @@ func TestUUID(t *testing.T) {
 	}
 }
 
+// TestROR tests the ROR validation func for an element.
 func TestROR(t *testing.T) {
 	elem := new(Element)
 	elem.Id = "ror"
@@ -107,6 +112,7 @@ func TestROR(t *testing.T) {
 	//SetDebug(false);
 }
 
+// TestValidateModelTypes test model element types from YAML input
 func TestValidateModelTypes(t *testing.T) {
 	src := []byte(`id: people_model
 description: CaltechPEOPLE
@@ -247,7 +253,7 @@ elements:
 	}
 	if model == nil {
 		t.Errorf("Expecte model to be non-nil")
-		t.FailNow()	
+		t.FailNow()
 	}
 	SetDefaultTypes(model)
 
@@ -280,12 +286,12 @@ elements:
 	}
 
 	//SetDebug(true)
-	if ! model.ValidateMapInterface(formData) {
+	if !model.ValidateMapInterface(formData) {
 		t.Error("Model failed to validate")
 		for _, elem := range model.Elements {
 			if val, ok := formData[elem.Id]; ok {
-				if validator, ok :=  model.validators[elem.Type]; ok {
-					if ! validator(elem, val.(string)) {
+				if validator, ok := model.validators[elem.Type]; ok {
+					if !validator(elem, val.(string)) {
 						t.Errorf("elem.Id %q, elem.Type %q failed to validate value %q", elem.Id, elem.Type, val)
 					}
 				}

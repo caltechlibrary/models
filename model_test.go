@@ -18,6 +18,7 @@ func inList(l []string, s string) bool {
 	return false
 }
 
+// TestModel test a model's methods
 func TestModel(t *testing.T) {
 	m := new(Model)
 	if m.HasChanges() {
@@ -84,7 +85,7 @@ elements:
 			t.Errorf("expected %q to be in attribute list %+v", attr, expectedAttr)
 		}
 	}
-	expectedElemIds := []string{"id", "name", "msg", "updated" }
+	expectedElemIds := []string{"id", "name", "msg", "updated"}
 	elemIds := m.GetElementIds()
 	for _, elemId := range expectedElemIds {
 		if !inList(elemIds, elemId) {
@@ -100,18 +101,19 @@ elements:
 	if len(generatedTypes) != 2 {
 		t.Errorf("expected 2 generator type elements, got %d", len(generatedTypes))
 	}
-	if val, ok := generatedTypes["updated"]; ! ok {
-		t.Errorf("expected updated to be %t, got %t in generator type", true , ok)
+	if val, ok := generatedTypes["updated"]; !ok {
+		t.Errorf("expected updated to be %t, got %t in generator type", true, ok)
 	} else if val != "current_timestamp" {
 		t.Errorf("expected %q, got %q", "current_timestamp", val)
 	}
-	if val, ok := generatedTypes["created"]; ! ok {
-		t.Errorf("expected created to be %t, got %t in generator type", true , ok)
+	if val, ok := generatedTypes["created"]; !ok {
+		t.Errorf("expected created to be %t, got %t in generator type", true, ok)
 	} else if val != "created_timestamp" {
 		t.Errorf("expected created %q, got %q", "created_timestamp", val)
 	}
 }
 
+// TestModelBuilding tests creating a newmodel programatticly
 func TestModelBuilding(t *testing.T) {
 	modelId := "test_model"
 	m, err := NewModel(modelId)
@@ -138,6 +140,7 @@ func TestModelBuilding(t *testing.T) {
 	*/
 }
 
+// TestHelperFuncs test the funcs from util.go
 func TestHelperFuncs(t *testing.T) {
 	m := map[string]string{
 		"one":   "1",
@@ -157,8 +160,9 @@ func TestHelperFuncs(t *testing.T) {
 	}
 }
 
+// TestValidateModel tests the model validation based on YAML input.
 func TestValidateModel(t *testing.T) {
-    src := []byte(`id: test_validator
+	src := []byte(`id: test_validator
 description: This is a test of the validation code
 elements:
   - id: pid
@@ -200,18 +204,20 @@ elements:
 	SetDefaultTypes(model)
 
 	formData := map[string]string{
-		"pid": "jane-doe", 
-		"lived": "Jane", 
-		"family": "Doe", 
-		"orcid": "0000-1111-2222-3333",
+		"pid":    "jane-doe",
+		"lived":  "Jane",
+		"family": "Doe",
+		"orcid":  "0000-1111-2222-3333",
 	}
-	if ok := model.Validate(formData); ! ok {
+	if ok := model.Validate(formData); !ok {
 		t.Errorf("%+v failed to validate", formData)
 	}
 }
 
+// TestValidateMapInterface tests the YAML model mapping
+// for decoding and encoding models.
 func TestValidateMapInterface(t *testing.T) {
-    src := []byte(`id: test_validate_map_inteface
+	src := []byte(`id: test_validate_map_inteface
 description: This is a test of the validation code
 elements:
   - id: pid
@@ -267,30 +273,31 @@ elements:
 
 	pid := uuid.New()
 	formData := map[string]interface{}{
-		"pid": pid,
-		"lived": "Jane", 
-		"family": "Doe", 
-		"orcid": "0000-1111-2222-3333",
+		"pid":     pid,
+		"lived":   "Jane",
+		"family":  "Doe",
+		"orcid":   "0000-1111-2222-3333",
 		"created": "2024-10-03T12:40:00",
 		"updated": "2024-10-03 12:41:32",
 	}
-	if ok := model.ValidateMapInterface(formData); ! ok {
+	if ok := model.ValidateMapInterface(formData); !ok {
 		t.Errorf("%+v failed to validate", formData)
 	}
 
 	formData = map[string]interface{}{
 		"created": "2024-10-03T13:25:24-07:00",
-		"family": "Jetson",
-		"lived":"George",
-		"orcid": "1234-4321-1234-4321",
-		"pid":"0192540f-0806-7631-b08f-4ae5c4d37cca",
-		"updated":"2024-10-03T13:25:24-07:00",
+		"family":  "Jetson",
+		"lived":   "George",
+		"orcid":   "1234-4321-1234-4321",
+		"pid":     "0192540f-0806-7631-b08f-4ae5c4d37cca",
+		"updated": "2024-10-03T13:25:24-07:00",
 	}
-	if ok := model.ValidateMapInterface(formData); ! ok {
+	if ok := model.ValidateMapInterface(formData); !ok {
 		t.Errorf("%+v failed to validate", formData)
 	}
 }
 
+// TestModelElements tests the GetGeneratedTypes func for Models.
 func TestModelElements(t *testing.T) {
 	m := new(Model)
 	modelTypes := m.GetGeneratedTypes()

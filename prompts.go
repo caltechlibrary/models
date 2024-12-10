@@ -19,6 +19,9 @@ type Prompt struct {
 }
 
 // NewPrompt creates a new prompt struct for use with the prompt methods.
+// @param in: io.Reader, the source of prompt responses.
+// @param out: io.Writer, the place the response is written to (e.g. Stdout)
+// @param eout: io.Writer, the place errors are written to (e.g. Stderr)
 //
 // ```
 //
