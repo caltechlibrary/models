@@ -1,53 +1,52 @@
 {
-    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-    "type": "SoftwareSourceCode",
-    "author": [
-        {
-            "id": "https://orcid.org/0000-0003-0900-6903",
-            "type": "Person",
-            "affiliation": {
-                "type": "Organization",
-                "name": "Caltech Library"
-            },
-            "email": "rsdoiel@caltech.edu",
-            "familyName": "Doiel",
-            "givenName": "R. S."
-        }
-    ],
-    "codeRepository": "https://github.com/caltechlibary/models",
-    "dateCreated": "2024-09-20",
-    "dateModified": "2024-10-15",
-    "datePublished": "2024-10-15",
-	"releaseNotes": "Refined interactive modeler",
-    "version": "0.0.5",
-    "developmentStatus": "wip",
-    "description": "A Go package for working with simple data models inspired by HTML5 web forms.",
-    "downloadUrl": "https://github.com/caltechlibrary/models/releases",
-    "funder": {
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "type": "SoftwareSourceCode",
+  "codeRepository": "https://github.com/caltechlibary/models",
+  "author": [
+    {
+      "id": "https://orcid.org/0000-0003-0900-6903",
+      "type": "Person",
+      "givenName": "R. S.",
+      "familyName": "Doiel",
+      "affiliation": {
         "type": "Organization",
         "name": "Caltech Library"
-    },
-    "keywords": "metadata",
-    "license": "https://spdx.org/licenses/BSD-3-Clause",
-    "name": "models",
-    "operatingSystem": [
-        "Linux",
-        "Windows",
-        "macOS"
-    ],
-    "programmingLanguage": {
-		"name": "Go",
-		"version": "1.23.1"
-	},
-    "relatedLink": [
-        "https://github.com/caltechlibrary/dataset",
-        "https://github.com/caltechlibrary/newt"
-    ],
-    "schema:releaseNotes": "Proof of concept",
-    "softwareRequirements": [
-        "Go >= 1.23.1",
-        "GNU Make",
-        "Pandoc >= 3.1"
-    ],
-    "issueTracker": "https://github.com/caltehclibrary/models/isues"
+      },
+      "email": "rsdoiel@caltech.edu"
+    }
+  ],
+  "dateCreated": "2024-09-20",
+  "dateModified": "2025-03-24",
+  "datePublished": "2025-03-24",
+  "description": "A Go and TypeScript package for working with simple data models inspired by HTML5 web forms.",
+  "funder": {
+    "type": "Organization",
+    "name": "Caltech Library"
+  },
+  "keywords": "metadata",
+  "name": "models",
+  "license": "https://spdx.org/licenses/BSD-3-Clause",
+  "operatingSystem": [
+    "Linux",
+    "Windows",
+    "macOS"
+  ],
+  "programmingLanguage": [
+    "Go",
+    "TypeScript"
+  ],
+  "relatedLink": [
+    "https://github.com/caltechlibrary/dataset",
+    "https://github.com/caltechlibrary/newt"
+  ],
+  "softwareRequirements": [
+    "Go >= 1.23.1",
+    "GNU Make",
+    "Pandoc >= 3.1"
+  ],
+  "version": "0.0.6",
+  "developmentStatus": "wip",
+  "issueTracker": "https://github.com/caltehclibrary/models/isues",
+  "downloadUrl": "https://github.com/caltechlibrary/models/releases",
+  "releaseNotes": "Refined interactive modeler, added TypeScript modules."
 }

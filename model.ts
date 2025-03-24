@@ -5,6 +5,7 @@
  */
 
 import { Element } from "./element.ts";
+import { isValidVarname } from "./util.ts";
 
 // Define the RenderFunc type
 type RenderFunc = (writer: WritableStream, model: Model) => Promise<void>;
@@ -216,7 +217,7 @@ export class Model {
   // model has a single identifier (e.g., "identifier")
   check(): boolean {
     this.errors = [];
-    if (!Element.isValidVarname(this.id)) {
+    if (!isValidVarname(this.id)) {
       this.errors.push(`Invalid model id, ${this.id}`);
     }
     if (this.elements.length === 0) {
@@ -244,14 +245,14 @@ export class Model {
 
   // InsertElement will add a new element to model.Elements in the position indicated,
   // It will also set isChanged to true on addition.
-  insertElement(pos: number, element: Element): void {
-    if (!Element.isValidVarname(element.id)) {
+  insertElement(pos: number, element: Element): boolean {
+    if (!isValidVarname(element.id)) {
       this.errors.push(`Element id is not valid: ${element.id}`);
-      throw new Error("Element id is not valid");
+      return false;
     }
     if (this.hasElement(element.id)) {
       this.errors.push(`Duplicate element id: ${element.id}`);
-      throw new Error(`Duplicate element id, ${element.id}`);
+      return false;
     }
     if (pos < 0) {
       pos = 0;
@@ -262,28 +263,43 @@ export class Model {
       this.elements.splice(pos, 0, element);
     }
     this.changed(true);
+    return true;
   }
 
   // UpdateElement will update an existing element with element id with the new element.
-  updateElement(elementId: string, element: Element): void {
+  updateElement(elementId: string, element: Element): boolean {
     const index = this.elements.findIndex(e => e.id === elementId);
     if (index === -1) {
       this.errors.push(`Element id ${elementId} not found`);
-      throw new Error(`Element id ${elementId} not found`);
+      return false;
     }
     this.elements[index] = element;
     this.changed(true);
+    return true;
   }
 
   // RemoveElement removes an element by id from the model.Elements
-  removeElement(elementId: string): void {
+  removeElement(elementId: string): boolean {
     const index = this.elements.findIndex(e => e.id === elementId);
     if (index === -1) {
       this.errors.push(`Element id ${elementId} not found`);
-      throw new Error(`Element id ${elementId} not found`);
+      return false;
     }
     this.elements.splice(index, 1);
     this.changed(true);
+    return true;
+  }
+
+  // RenderElement renders the model using the specified render function.
+  async renderElement(name: string, out: WritableStream): Promise<boolean> {
+    const fn = this.renderer[name];
+    if (fn) {
+      await fn(out, this);
+      return true;
+    } else {
+      this.errors.push(`${name} is not a registered rendering function`);
+      return false;
+    }
   }
 
   // ToSQLiteScheme takes a model and tries to render a SQLite3 SQL create statement.
@@ -332,7 +348,7 @@ export class Model {
   }
 
   // fromObject takes a parameter of {[key: string]: any} and maps it into the attributes of a Model
-  fromObject(data: { [key: string]: any }): void {
+  fromObject(data: { [key: string]: any }): boolean {
     if (data.id && typeof data.id === "string") {
       this.id = data.id;
     }
@@ -346,23 +362,20 @@ export class Model {
       this.title = data.title;
     }
     if (Array.isArray(data.elements)) {
-      this.elements = data.elements.map((elem: any) => {
+      this.elements = [];
+      for (const elem of data.elements) {
         if (elem instanceof Element) {
-          return elem;
+          this.elements.push(elem);
         } else if (typeof elem === "object") {
           const newElem = new Element(elem);
           newElem.fromObject(elem);
-          return newElem;
+          this.elements.push(newElem);
         }
-        this.errors.push("Invalid element data");
-        throw new Error("Invalid element data");
-      });
+      }
+    } else {
+      this.errors.push("data elements are not an array");
+      return false;
     }
+    return this.check();
   }
-}
-
-// Function to check if a string is a valid variable name
-function isValidVarname(name: string): boolean {
-  const validVarnameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-  return validVarnameRegex.test(name);
 }

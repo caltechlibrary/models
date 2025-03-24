@@ -25,6 +25,7 @@ go.work.sum
 .env
 
 # Project excludes
+.DS_Store
 testout/
 dist/
 bin/
