@@ -85,6 +85,20 @@ type Element struct {
 	// the element's id.
 	Label string `json:"label,omitempty" yaml:"label,omitempty"`
 
+	// Elements holds nested elements for object and list types. For objects, this defines
+	// the sub-fields. For lists, this defines the element type that can be repeated.
+	// This enables modeling complex structures like CrossRef authors (list of objects
+	// with nested fields like given, family, orcid, affiliation).
+	Elements []*Element `json:"elements,omitempty" yaml:"elements,omitempty"`
+
+	// IsList indicates this element represents an array/list of values.
+	// When true, the element expects multiple instances of its type (or nested Elements).
+	IsList bool `json:"is_list,omitempty" yaml:"is_list,omitempty"`
+
+	// IsObject indicates this element represents a nested object/map.
+	// When true, the element contains sub-elements defined in Elements.
+	IsObject bool `json:"is_object,omitempty" yaml:"is_object,omitempty"`
+
 	//
 	// These fields are used by the modeler to manage the models and their elements
 	//
@@ -103,6 +117,9 @@ func NewElement(elementId string) (*Element, error) {
 	element.Type = "text"
 	element.Label = strings.ToUpper(elementId[0:1]) + elementId[1:]
 	element.IsObjectId = false
+	element.Elements = []*Element{}
+	element.IsList = false
+	element.IsObject = false
 	element.isChanged = true
 	return element, nil
 }
@@ -122,7 +139,7 @@ func (e *Element) Check(buf io.Writer) bool {
 	ok := true
 	if e == nil {
 		fmt.Fprintf(buf, "element is nil\n")
-		ok = false
+		return false
 	}
 	if e.Id == "" {
 		fmt.Fprintf(buf, "element missing id\n")
@@ -131,6 +148,22 @@ func (e *Element) Check(buf io.Writer) bool {
 	if e.Type == "" {
 		fmt.Fprintf(buf, "element, %q, missing type\n", e.Id)
 		ok = false
+	}
+	// Check nested elements if present
+	if e.IsObject && len(e.Elements) == 0 {
+		fmt.Fprintf(buf, "element, %q, is object but has no nested elements\n", e.Id)
+		ok = false
+	}
+	if e.IsList && len(e.Elements) == 0 {
+		fmt.Fprintf(buf, "element, %q, is list but has no element template\n", e.Id)
+		ok = false
+	}
+	// Recursively check nested elements
+	for _, nested := range e.Elements {
+		if !nested.Check(buf) {
+			fmt.Fprintf(buf, "  (nested in %s)\n", e.Id)
+			ok = false
+		}
 	}
 	return ok
 }

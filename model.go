@@ -115,6 +115,8 @@ func (model *Model) Validate(formData map[string]string) bool {
 
 // ValidateMapInterface normalizes the map inteface values before calling
 // the element's validator function.
+// This is the legacy validation method for flat (non-nested) models.
+// For nested structures, use ValidateRecursive or Validate instead.
 func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 	if model == nil {
 		if Debug {
@@ -167,6 +169,286 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 		}
 	}
 	return true
+}
+
+// ValidateInterface validates the entire data structure against the model's schema.
+// This method handles both flat and nested structures (lists and objects).
+// For flat models, it behaves like ValidateMapInterface.
+// For nested models, it uses recursive validation.
+func (model *Model) ValidateInterface(data interface{}) bool {
+	if model == nil {
+		if Debug {
+			log.Printf("model is nil, can't validate")
+		}
+		return false
+	}
+
+	// If data is a map, check if it's a flat or nested model
+	if dataMap, ok := data.(map[string]interface{}); ok {
+		// Check if model has any nested elements
+		hasNested := false
+		for _, elem := range model.Elements {
+			if elem.IsList || elem.IsObject {
+				hasNested = true
+				break
+			}
+		}
+
+		if hasNested {
+			// Use recursive validation for nested structures
+			return model.validateObject(dataMap, &Element{
+				Type:     "object",
+				IsObject: true,
+				Elements: model.Elements,
+			}, "root")
+		}
+
+		// Use legacy validation for flat structures
+		return model.ValidateMapInterface(dataMap)
+	}
+
+	// For non-map data, use recursive validation starting from root
+	return model.ValidateRecursive(data, &Element{
+		Type:     "object",
+		IsObject: true,
+		Elements: model.Elements,
+	}, "root")
+}
+
+// ValidateRecursive validates data against the model's schema, supporting nested structures.
+// It handles objects (maps) and lists (slices) recursively.
+// For list elements, it validates each item in the slice against the element's nested schema.
+// For object elements, it validates the map against the element's nested schema.
+func (model *Model) ValidateRecursive(data interface{}, elem *Element, path string) bool {
+	if elem == nil {
+		if Debug {
+			log.Printf("DEBUG ValidateRecursive: elem is nil at path %q", path)
+		}
+		return false
+	}
+
+	// Handle nil data
+	if data == nil {
+		// Nil is acceptable for optional fields
+		if Debug {
+			log.Printf("DEBUG ValidateRecursive: data is nil at path %q, elem %q", path, elem.Id)
+		}
+		return true
+	}
+
+	// For list elements: data should be a slice
+	if elem.IsList {
+		return model.validateList(data, elem, path)
+	}
+
+	// For object elements: data should be a map
+	if elem.IsObject {
+		return model.validateObject(data, elem, path)
+	}
+
+	// For simple types: use the existing type-based validation
+	// Normalize to string and use the validator
+	var val string
+	switch v := data.(type) {
+	case string:
+		val = v
+	case int:
+		val = fmt.Sprintf("%d", v)
+	case float64:
+		val = fmt.Sprintf("%f", v)
+	case json.Number:
+		val = fmt.Sprintf("%s", v)
+	case bool:
+		val = fmt.Sprintf("%t", v)
+	default:
+		if Debug {
+			log.Printf("DEBUG ValidateRecursive: unsupported type %T for elem %q at path %q", data, elem.Id, path)
+		}
+		return false
+	}
+
+	// Use the type-specific validator if available
+	if validator, ok := model.validators[elem.Type]; ok {
+		if !validator(elem, val) {
+			if Debug {
+				log.Printf("DEBUG ValidateRecursive: validation failed for elem %q at path %q, value %q", elem.Id, path, val)
+			}
+			return false
+		}
+		return true
+	}
+
+	// No validator found for this type
+	if Debug {
+		log.Printf("DEBUG ValidateRecursive: no validator for type %q (elem %q) at path %q", elem.Type, elem.Id, path)
+	}
+	return false
+}
+
+// validateList validates a slice against a list element's schema.
+func (model *Model) validateList(data interface{}, elem *Element, path string) bool {
+	sliceData, ok := data.([]interface{})
+	if !ok {
+		if Debug {
+			log.Printf("DEBUG validateList: expected slice at path %q, got %T", path, data)
+		}
+		return false
+	}
+
+	// If the list element has nested elements, they define the schema for each item
+	if len(elem.Elements) > 0 {
+		// Create a virtual element that wraps the nested elements
+		// This represents the schema for each item in the list
+		itemElem := &Element{
+			Type:     "object",
+			IsObject: true,
+			Elements: elem.Elements,
+		}
+		for i, item := range sliceData {
+			itemPath := fmt.Sprintf("%s[%d]", path, i)
+			if !model.ValidateRecursive(item, itemElem, itemPath) {
+				if Debug {
+					log.Printf("DEBUG validateList: item %d failed validation at path %q", i, path)
+				}
+				return false
+			}
+		}
+		return true
+	}
+
+	// Simple list without nested schema: validate each item as the element's type
+	for i, item := range sliceData {
+		itemPath := fmt.Sprintf("%s[%d]", path, i)
+		if !model.ValidateRecursive(item, elem, itemPath) {
+			if Debug {
+				log.Printf("DEBUG validateList: simple list item %d failed at path %q", i, path)
+			}
+			return false
+		}
+	}
+	return true
+}
+
+// validateObject validates a map against an object element's schema.
+func (model *Model) validateObject(data interface{}, elem *Element, path string) bool {
+	objData, ok := data.(map[string]interface{})
+	if !ok {
+		if Debug {
+			log.Printf("DEBUG validateObject: expected map at path %q, got %T", path, data)
+		}
+		return false
+	}
+
+	// Validate each nested element
+	for _, nestedElem := range elem.Elements {
+		nestedPath := fmt.Sprintf("%s.%s", path, nestedElem.Id)
+		if nestedValue, ok := objData[nestedElem.Id]; ok {
+			if !model.ValidateRecursive(nestedValue, nestedElem, nestedPath) {
+				if Debug {
+					log.Printf("DEBUG validateObject: nested element %q failed at path %q", nestedElem.Id, nestedPath)
+				}
+				return false
+			}
+		} else if model.isRequired(nestedElem) {
+			// Required field is missing
+			if Debug {
+				log.Printf("DEBUG validateObject: required field %q missing at path %q", nestedElem.Id, nestedPath)
+			}
+			return false
+		}
+	}
+
+	// Check for unexpected fields
+	for key := range objData {
+		if !model.hasNestedElement(elem, key) {
+			if Debug {
+				log.Printf("DEBUG validateObject: unexpected field %q at path %q", key, path)
+			}
+			// For now, we'll allow unexpected fields (forward compatibility)
+			// Could make this strict with a configuration option
+		}
+	}
+
+	return true
+}
+
+// hasNestedElement checks if an element has a nested element with the given ID.
+func (model *Model) hasNestedElement(elem *Element, id string) bool {
+	for _, nested := range elem.Elements {
+		if nested.Id == id {
+			return true
+		}
+	}
+	return false
+}
+
+// isRequired checks if an element is required (either IsObjectId or has required attribute)
+func (model *Model) isRequired(elem *Element) bool {
+	if elem == nil {
+		return false
+	}
+	if elem.IsObjectId {
+		return true
+	}
+	if elem.Attributes != nil {
+		if req := elem.Attributes["required"]; req == "true" || req == "True" || req == "TRUE" {
+			return true
+		}
+	}
+	return false
+}
+
+// GetNestedElement returns a nested element by its path (e.g., "author.0.given").
+// Path segments are separated by dots. Array indices are supported with bracket notation.
+func (model *Model) GetNestedElement(path string) (*Element, bool) {
+	if path == "" {
+		return nil, false
+	}
+
+	// Start from the root elements
+	currentElements := model.Elements
+	segments := strings.Split(path, ".")
+
+	var currentElem *Element
+	for i, seg := range segments {
+		// Handle array index notation like "author[0]"
+		var elemId string
+
+		// Check for array notation
+		if idx := strings.Index(seg, "["); idx != -1 {
+			elemId = seg[:idx]
+			// isArray = true  // Reserved for future use
+		} else {
+			elemId = seg
+		}
+
+		// Find the element with this ID
+		found := false
+		for _, elem := range currentElements {
+			if elem.Id == elemId {
+				currentElem = elem
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return nil, false
+		}
+
+		// If this is the last segment, return the element
+		if i == len(segments)-1 {
+			return currentElem, true
+		}
+
+		// Move to nested elements
+		if len(currentElem.Elements) == 0 {
+			return nil, false
+		}
+		currentElements = currentElem.Elements
+	}
+
+	return nil, false
 }
 
 // HasChanges checks if the model's elements have changed

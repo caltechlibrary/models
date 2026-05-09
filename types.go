@@ -45,12 +45,47 @@ const (
 	OrcidPattern = `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
 	RORPattern   = `^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$`
 	ISNIPattern  = `[0-9]{4} [0-9]{4} [0-9]{4] [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4]-[0-9X]{4}`
+	// ISBN patterns - use simple placeholder patterns; real validation done in ValidateISBN
+	ISBN10Pattern = `[0-9\- ]{10,17}`
+	ISBN13Pattern = `[0-9\- ]{13,26}`
+	ISBNPattern   = `[0-9\- ]{10,26}`
+	// ISSN pattern
+	ISSNPattern = `[0-9\- ]{8,10}`
+	// DOI pattern - placeholder, real validation in ValidateDOI function
+	DOIPattern = `10\.[0-9/\-_.:]+`
+	// ArXiv patterns
+	ARXIVPattern = `arxiv:[0-9a-z\./\-]+`
+	// EAN pattern (same as ISBN-13)
+	EANPattern = ISBN13Pattern
+	// PMID pattern
+	PMIDPattern = `^[0-9]+$`
+	// PMCID pattern
+	PMCIDPattern = `^PMC[0-9]+$`
+	// FundRef pattern
+	FundRefPattern = `^10\.[0-9]{4,9}/[-._;()/:A-Z0-9]+$`
+	// LCNAF pattern
+	LCNAFPattern = `^[a-zA-Z0-9]+$`
+	// VIAF pattern
+	VIAFPattern = `^[0-9]+$`
+	// SNAC pattern
+	SNACPattern = `^[0-9]+$`
 )
 
 var (
-	ReORCID *regexp.Regexp
-	ReROR   *regexp.Regexp
-	ReISNI  *regexp.Regexp
+	ReORCID  *regexp.Regexp
+	ReROR    *regexp.Regexp
+	ReISNI   *regexp.Regexp
+	ReISBN   *regexp.Regexp
+	ReISSN   *regexp.Regexp
+	ReDOI    *regexp.Regexp
+	ReARXIV  *regexp.Regexp
+	ReEAN    *regexp.Regexp
+	RePMID   *regexp.Regexp
+	RePMCID  *regexp.Regexp
+	ReFundRef *regexp.Regexp
+	ReLCNAF  *regexp.Regexp
+	ReVIAF   *regexp.Regexp
+	ReSNAC   *regexp.Regexp
 )
 
 // GenerateROR setups up for an HTML ROR type input element
@@ -687,6 +722,426 @@ func ValidateORCID(elem *Element, formValue string) bool {
 	return false
 }
 
+// GenerateISBN sets up for an HTML input type text using a pattern for ISBN (10 or 13)
+func GenerateISBN() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     ISBNPattern,
+			"placeholder": "e.g. 978-3-16-148410-0 or 0-306-40615-2",
+		},
+	}
+}
+
+// ValidateISBN validates ISBN-10 or ISBN-13 checksum
+func ValidateISBN(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	cleanISBN := strings.ReplaceAll(strings.ReplaceAll(strings.ToUpper(formValue), "-", ""), " ", "")
+	if len(cleanISBN) == 10 {
+		return validateISBN10(cleanISBN)
+	}
+	if len(cleanISBN) == 13 {
+		return validateISBN13(cleanISBN)
+	}
+	return false
+}
+
+// validateISBN10 validates ISBN-10 checksum (internal helper)
+func validateISBN10(isbn string) bool {
+	if len(isbn) != 10 {
+		return false
+	}
+	checksum := 0
+	for i := 0; i < 9; i++ {
+		digit, err := strconv.Atoi(isbn[i : i+1])
+		if err != nil {
+			return false
+		}
+		checksum += digit * (10 - i)
+	}
+	checkDigit := isbn[9]
+	if checkDigit == 'X' || checkDigit == 'x' {
+		checksum += 10
+	} else {
+		digit, err := strconv.Atoi(string(checkDigit))
+		if err != nil {
+			return false
+		}
+		checksum += digit
+	}
+	return checksum%11 == 0
+}
+
+// validateISBN13 validates ISBN-13 checksum (internal helper)
+func validateISBN13(isbn string) bool {
+	if len(isbn) != 13 {
+		return false
+	}
+	checksum := 0
+	for i := 0; i < 12; i++ {
+		digit, err := strconv.Atoi(isbn[i : i+1])
+		if err != nil {
+			return false
+		}
+		// Weight is 1 for even positions, 3 for odd positions (0-indexed)
+		weight := 1
+		if i%2 == 1 {
+			weight = 3
+		}
+		checksum += digit * weight
+	}
+	checkDigit, err := strconv.Atoi(isbn[12:13])
+	if err != nil {
+		return false
+	}
+	return (checksum+checkDigit)%10 == 0
+}
+
+// GenerateISSN sets up for an HTML input type text using a pattern for ISSN
+func GenerateISSN() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     ISSNPattern,
+			"placeholder": "e.g. ISSN 1234-5678",
+		},
+	}
+}
+
+// ValidateISSN validates ISSN checksum
+func ValidateISSN(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	// Strip prefix and normalize
+	bareISSN := strings.ToUpper(strings.TrimSpace(formValue))
+	bareISSN = strings.TrimPrefix(bareISSN, "ISSN")
+	bareISSN = strings.ReplaceAll(bareISSN, "-", "")
+	bareISSN = strings.ReplaceAll(bareISSN, " ", "")
+	if len(bareISSN) != 8 {
+		return false
+	}
+	return validateISSNChecksum(bareISSN)
+}
+
+// validateISSNChecksum validates ISSN checksum using the algorithm (internal helper)
+func validateISSNChecksum(issn string) bool {
+	if len(issn) != 8 {
+		return false
+	}
+	digits := issn[0:7]
+	checkDigit := strings.ToUpper(string(issn[7]))
+	
+	checksum := 0
+	for i := 0; i < 7; i++ {
+		digit, err := strconv.Atoi(digits[i : i+1])
+		if err != nil {
+			return false
+		}
+		checksum += digit * (8 - i)
+	}
+	remainder := checksum % 11
+	var expectedCheckDigit string
+	if remainder == 0 {
+		expectedCheckDigit = "0"
+	} else if remainder == 1 {
+		expectedCheckDigit = "X"
+	} else {
+		expectedCheckDigit = strconv.Itoa(11 - remainder)
+	}
+	return checkDigit == expectedCheckDigit
+}
+
+// GenerateDOI sets up for an HTML input type text using a pattern for DOI
+func GenerateDOI() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     DOIPattern,
+			"placeholder": "e.g. 10.22002/bv2pv-2b295",
+		},
+	}
+}
+
+// ValidateDOI validates DOI format
+func ValidateDOI(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	// Strip URL prefix if present
+	val := strings.TrimSpace(formValue)
+	if strings.HasPrefix(val, "https://doi.org/") {
+		val = strings.TrimPrefix(val, "https://doi.org/")
+	} else if strings.HasPrefix(val, "http://doi.org/") {
+		val = strings.TrimPrefix(val, "http://doi.org/")
+	} else if strings.HasPrefix(val, "doi:") {
+		val = strings.TrimPrefix(val, "doi:")
+	}
+	// DOI format: 10.NNNN/suffix where NNNN is 4+ digits
+	if !strings.HasPrefix(val, "10.") {
+		return false
+	}
+	// Remove prefix
+	val = strings.TrimPrefix(val, "10.")
+	if val == "" {
+		return false
+	}
+	// Find the slash
+	slashIndex := strings.Index(val, "/")
+	if slashIndex < 4 { // At least 4 digits before slash
+		return false
+	}
+	// Check digits before slash
+	prefix := val[:slashIndex]
+	if !isAllDigits(prefix) || len(prefix) < 4 {
+		return false
+	}
+	// Check suffix exists
+	if slashIndex >= len(val)-1 {
+		return false
+	}
+	return true
+}
+
+// GenerateArXiv sets up for an HTML input type text using a pattern for ArXiv
+func GenerateArXiv() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     ARXIVPattern,
+			"placeholder": "e.g. arxiv:2412.03631 or arxiv:hep-th/9901001",
+		},
+	}
+}
+
+// ValidateArXiv validates ArXiv identifier format
+func ValidateArXiv(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.ToLower(strings.TrimSpace(formValue))
+	// Strip prefix if present
+	val = strings.TrimPrefix(val, "arxiv:")
+	if val == "" {
+		return false
+	}
+	// Check new format: YYYY.NNNNN or YYYY.NNNNNvN
+	if strings.Contains(val, ".") {
+		parts := strings.Split(val, ".")
+		if len(parts) != 2 {
+			return false
+		}
+		// Year part: 4 digits
+		if len(parts[0]) != 4 || !isAllDigits(parts[0]) {
+			return false
+		}
+		// ID part: at least 4 digits, optional vN suffix
+		idPart := parts[1]
+		if len(idPart) < 4 {
+			return false
+		}
+		// Check for version suffix
+		if strings.HasPrefix(idPart, "v") {
+			idPart = strings.TrimPrefix(idPart, "v")
+			if len(idPart) < 1 || !isAllDigits(idPart) {
+				return false
+			}
+		} else {
+			if !isAllDigits(idPart) {
+				return false
+			}
+		}
+		return true
+	}
+	// Check old format: archive/NNNNNNN or archive/NNNNNNNvN
+	if strings.Contains(val, "/") {
+		parts := strings.Split(val, "/")
+		if len(parts) != 2 {
+			return false
+		}
+		// Archive part: alphanumeric with hyphens
+		if len(parts[0]) < 1 {
+			return false
+		}
+		// ID part: exactly 7 digits (or more with version)
+		idPart := parts[1]
+		if len(idPart) < 7 {
+			return false
+		}
+		// Check for version suffix
+		if strings.HasPrefix(idPart, "v") {
+			idPart = strings.TrimPrefix(idPart, "v")
+		}
+		if len(idPart) != 7 || !isAllDigits(idPart) {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+// isAllDigits checks if a string contains only digits
+func isAllDigits(s string) bool {
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return s != ""
+}
+
+// GenerateEAN sets up for an HTML input type text using a pattern for EAN (same as ISBN-13)
+func GenerateEAN() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     EANPattern,
+			"placeholder": "e.g. 9780306406157",
+		},
+	}
+}
+
+// ValidateEAN validates EAN-13 (same as ISBN-13 validation)
+func ValidateEAN(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	cleanEAN := strings.ReplaceAll(strings.ReplaceAll(formValue, "-", ""), " ", "")
+	if len(cleanEAN) == 13 {
+		return validateISBN13(cleanEAN)
+	}
+	return false
+}
+
+// GeneratePMID sets up for an HTML input type text using a pattern for PubMed ID
+func GeneratePMID() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     PMIDPattern,
+			"placeholder": "e.g. 1234567",
+		},
+	}
+}
+
+// ValidatePMID validates PubMed ID format
+func ValidatePMID(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.TrimSpace(formValue)
+	// Remove common prefixes
+	val = strings.TrimPrefix(val, "PMID:")
+	val = strings.TrimPrefix(val, "pmid:")
+	val = strings.ReplaceAll(val, " ", "")
+	return RePMID.MatchString(val)
+}
+
+// GeneratePMCID sets up for an HTML input type text using a pattern for PubMed Central ID
+func GeneratePMCID() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     PMCIDPattern,
+			"placeholder": "e.g. PMC1234567",
+		},
+	}
+}
+
+// ValidatePMCID validates PubMed Central ID format
+func ValidatePMCID(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.ToUpper(strings.TrimSpace(formValue))
+	if !strings.HasPrefix(val, "PMC") {
+		val = "PMC" + val
+	}
+	return RePMCID.MatchString(val)
+}
+
+// GenerateFundRef sets up for an HTML input type text using a pattern for FundRef DOI
+func GenerateFundRef() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     FundRefPattern,
+			"placeholder": "e.g. 10.13039/100000001",
+		},
+	}
+}
+
+// ValidateFundRef validates FundRef DOI format
+func ValidateFundRef(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.ToLower(strings.TrimSpace(formValue))
+	return ReFundRef.MatchString(val)
+}
+
+// GenerateLCNAF sets up for an HTML input type text using a pattern for LCNAF
+func GenerateLCNAF() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     LCNAFPattern,
+			"placeholder": "LCNAF identifier",
+		},
+	}
+}
+
+// ValidateLCNAF validates LCNAF format
+func ValidateLCNAF(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.TrimSpace(formValue)
+	return ReLCNAF.MatchString(val)
+}
+
+// GenerateVIAF sets up for an HTML input type text using a pattern for VIAF
+func GenerateVIAF() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     VIAFPattern,
+			"placeholder": "VIAF identifier",
+		},
+	}
+}
+
+// ValidateVIAF validates VIAF format
+func ValidateVIAF(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.TrimSpace(formValue)
+	return ReVIAF.MatchString(val)
+}
+
+// GenerateSNAC sets up for an HTML input type text using a pattern for SNAC
+func GenerateSNAC() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     SNACPattern,
+			"placeholder": "SNAC identifier",
+		},
+	}
+}
+
+// ValidateSNAC validates SNAC format
+func ValidateSNAC(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.TrimSpace(formValue)
+	return ReSNAC.MatchString(val)
+}
+
 func SetDefaultTypes(model *Model) {
 	model.Define("date", GenerateDate, ValidateDate)
 	model.Define("datetime-local", GenerateDateTimeLocal, ValidateDateTimeLocal)
@@ -707,6 +1162,18 @@ func SetDefaultTypes(model *Model) {
 	model.Define("isni", GenerateISNI, ValidateISNI)
 	model.Define("uuid", GenerateUUID, ValidateUUID)
 	model.Define("ror", GenerateROR, ValidateROR)
+	// Identifier types
+	model.Define("isbn", GenerateISBN, ValidateISBN)
+	model.Define("issn", GenerateISSN, ValidateISSN)
+	model.Define("doi", GenerateDOI, ValidateDOI)
+	model.Define("arxiv", GenerateArXiv, ValidateArXiv)
+	model.Define("ean", GenerateEAN, ValidateEAN)
+	model.Define("pmid", GeneratePMID, ValidatePMID)
+	model.Define("pmcid", GeneratePMCID, ValidatePMCID)
+	model.Define("fundref", GenerateFundRef, ValidateFundRef)
+	model.Define("lcnaf", GenerateLCNAF, ValidateLCNAF)
+	model.Define("viaf", GenerateVIAF, ValidateVIAF)
+	model.Define("snac", GenerateSNAC, ValidateSNAC)
 
 	// NOTE: The following are not in the default but their usefulness
 	// in the context of persisting data is not clear.
@@ -723,4 +1190,15 @@ func init() {
 	ReORCID = regexp.MustCompilePOSIX(OrcidPattern)
 	ReROR = regexp.MustCompilePOSIX(RORPattern)
 	ReISNI = regexp.MustCompilePOSIX(ISNIPattern)
+	ReISBN = regexp.MustCompilePOSIX(ISBNPattern)
+	ReISSN = regexp.MustCompilePOSIX(ISSNPattern)
+	ReDOI = regexp.MustCompilePOSIX(DOIPattern)
+	ReARXIV = regexp.MustCompilePOSIX(ARXIVPattern)
+	ReEAN = regexp.MustCompilePOSIX(EANPattern)
+	RePMID = regexp.MustCompilePOSIX(PMIDPattern)
+	RePMCID = regexp.MustCompilePOSIX(PMCIDPattern)
+	ReFundRef = regexp.MustCompilePOSIX(FundRefPattern)
+	ReLCNAF = regexp.MustCompilePOSIX(LCNAFPattern)
+	ReVIAF = regexp.MustCompilePOSIX(VIAFPattern)
+	ReSNAC = regexp.MustCompilePOSIX(SNACPattern)
 }

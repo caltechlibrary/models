@@ -331,3 +331,198 @@ func TestModelElements(t *testing.T) {
 		t.Errorf("expected zero model types, got %+v", modelTypes)
 	}
 }
+
+// TestNestedValidation tests validation of nested structures (objects and lists)
+func TestNestedValidation(t *testing.T) {
+	// Create a model with nested author object
+	txt := `id: article
+Description: Test model with nested structures
+elements:
+  - id: doi
+    type: doi
+    attributes:
+      required: true
+  - id: title
+    type: text
+    attributes:
+      required: true
+  - id: author
+    type: text
+    is_list: true
+    elements:
+      - id: given
+        type: text
+        attributes:
+          required: true
+      - id: family
+        type: text
+        attributes:
+          required: true
+      - id: orcid
+        type: orcid
+        attributes:
+          required: false
+  - id: affiliation
+    type: text
+    is_object: true
+    elements:
+      - id: name
+        type: text
+      - id: ror
+        type: ror
+`
+	model := new(Model)
+	if err := yaml.Unmarshal([]byte(txt), model); err != nil {
+		t.Fatalf("Failed to parse model YAML: %v", err)
+	}
+	SetDefaultTypes(model)
+
+	// Test valid nested data
+	validData := map[string]interface{}{
+		"doi": "10.1234/test",
+		"title": "Test Article",
+		"author": []interface{}{
+			map[string]interface{}{
+				"given":  "Jane",
+				"family": "Doe",
+				"orcid":  "0000-0002-1825-0097",
+			},
+			map[string]interface{}{
+				"given":  "John",
+				"family": "Smith",
+			},
+		},
+		"affiliation": map[string]interface{}{
+			"name": "Caltech",
+			"ror":  "05dxps055",
+		},
+	}
+
+	if !model.ValidateInterface(validData) {
+		t.Errorf("Valid nested data failed validation")
+	}
+
+	// Test invalid - missing required field in nested author
+	invalidAuthor := map[string]interface{}{
+		"doi": "10.1234/test",
+		"title": "Test Article",
+		"author": []interface{}{
+			map[string]interface{}{
+				"given": "Jane",
+				// missing family
+			},
+		},
+	}
+	if model.ValidateInterface(invalidAuthor) {
+		t.Errorf("Invalid nested data (missing family) passed validation")
+	}
+
+	// Test invalid - wrong type for author (should be list)
+	invalidAuthorType := map[string]interface{}{
+		"doi":    "10.1234/test",
+		"title":  "Test Article",
+		"author": "Jane Doe", // string instead of list
+	}
+	if model.ValidateInterface(invalidAuthorType) {
+		t.Errorf("Invalid author type (string instead of list) passed validation")
+	}
+
+	// Test invalid DOI
+	invalidDOI := map[string]interface{}{
+		"doi": "not-a-doi",
+		"title": "Test Article",
+		"author": []interface{}{
+			map[string]interface{}{
+				"given":  "Jane",
+				"family": "Doe",
+			},
+		},
+	}
+	if model.ValidateInterface(invalidDOI) {
+		t.Errorf("Invalid DOI passed validation")
+	}
+}
+
+// TestGetNestedElement tests the GetNestedElement method
+func TestGetNestedElement(t *testing.T) {
+	// Create a model with nested structure
+	txt := `id: crossref
+Description: CrossRef-like structure
+elements:
+  - id: doi
+    type: doi
+  - id: author
+    type: text
+    is_list: true
+    elements:
+      - id: given
+        type: text
+      - id: family
+        type: text
+      - id: affiliation
+        type: text
+        is_object: true
+        elements:
+          - id: name
+            type: text
+          - id: ror
+            type: ror
+`
+	model := new(Model)
+	if err := yaml.Unmarshal([]byte(txt), model); err != nil {
+		t.Fatalf("Failed to parse model YAML: %v", err)
+	}
+
+	// Test getting top-level element
+	if _, ok := model.GetNestedElement("doi"); !ok {
+		t.Errorf("Failed to get top-level element 'doi'")
+	}
+
+	// Test getting nested element
+	if _, ok := model.GetNestedElement("author"); !ok {
+		t.Errorf("Failed to get nested element 'author'")
+	}
+
+	// Test getting deeply nested element (requires path notation)
+	// For now, GetNestedElement only handles direct children
+	// This test documents current limitation
+	if elem, ok := model.GetNestedElement("author.given"); !ok {
+		t.Logf("Note: GetNestedElement does not currently support dotted paths (author.given)")
+	} else {
+		t.Logf("Got element: %+v", elem)
+	}
+}
+
+// TestElementCheck tests the Check method for elements with nested structures
+func TestElementCheck(t *testing.T) {
+	// Create a valid element with nested elements
+	elem, err := NewElement("author")
+	if err != nil {
+		t.Fatalf("Failed to create element: %v", err)
+	}
+	elem.IsList = true
+	
+	// Add nested elements
+	given, _ := NewElement("given")
+	given.Type = "text"
+	family, _ := NewElement("family")
+	family.Type = "text"
+	
+	elem.Elements = append(elem.Elements, given)
+	elem.Elements = append(elem.Elements, family)
+
+	var buf bytes.Buffer
+	if !elem.Check(&buf) {
+		t.Errorf("Valid nested element failed Check: %s", buf.String())
+	}
+
+	// Create an invalid element (list without nested elements)
+	invalidElem, _ := NewElement("invalid_list")
+	invalidElem.IsList = true
+	// No nested elements added
+	
+	var buf2 bytes.Buffer
+	if invalidElem.Check(&buf2) {
+		t.Errorf("Invalid element (list without nested elements) passed Check")
+	}
+}

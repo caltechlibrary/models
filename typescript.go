@@ -65,9 +65,7 @@ export interface %s {
 		varType := mapTypeToTypeScript(elem)
 		fmt.Fprintf(out, "\t%s: %s;\n", varName, varType)
 	}
-	fmt.Fprintln(out, `}
-
-`)
+	fmt.Fprintln(out, `}`)
 
 	fmt.Fprintf(out, `// %s's class definition
 export class %s implements %s {
@@ -85,9 +83,7 @@ export class %s implements %s {
 		}
 		fmt.Fprintf(out, "\t%s: %s;\n", varName, varType)
 	}
-	fmt.Fprintln(out, `}
-
-`)
+	fmt.Fprintln(out, `}`)
 	return nil
 }
 
