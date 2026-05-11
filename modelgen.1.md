@@ -1,4 +1,4 @@
-%modelgen(1) user manual | version 0.0.7 dddf7ce
+%modelgen(1) user manual | version 0.0.7 6193413
 % R. S. Doiel
 % 2026-05-11
 
