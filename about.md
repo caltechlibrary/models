@@ -1,53 +1,73 @@
 ---
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-type: software
-title: "models"
-abstract: "A Go package for working with simple data models inspired by
-HTML5 web forms."
+title: models
+abstract: "A Go package for working with simple data models inspired by HTML5 web forms and complex models used in libraries and archives."
 authors:
-  - family-names: Doiel
-    given-names: R. S.
-    orcid: ""
+  - family_name: Doiel
+    given_name: R. S.
+    id: https://orcid.org/0000-0003-0900-6903
 
-repository-code: "https://github.com/caltechlibary/models"
-version: 0.0.5
-license-url: "https://spdx.org/licenses/BSD-3-Clause"
-keywords: [ "metadata" ]
-date-released: 2024-10-15
+
+
+repository_code: https://github.com/caltechlibary/models
+version: 0.0.7
+license_url: https://spdx.org/licenses/BSD-3-Clause
+operating_system:
+  - Linux
+  - Windows
+  - macOS
+
+programming_language:
+  - Go
+
+keywords:
+
+date_released: 2026-05-11
 ---
 
 About this software
 ===================
 
-## models 0.0.5
+## models 0.0.7
 
-### Authors
+- cleaned up models
+- the new structures module will supply the modeling UI
 
-- R. S. Doiel
+## Authors
 
-
-
-A Go package for working with simple data models inspired by HTML5 web
-forms.
-
-- License: <https://spdx.org/licenses/BSD-3-Clause>
-- GitHub: <https://github.com/caltechlibary/models>
-- Issues: <https://github.com/caltehclibrary/models/isues>
+- [R. S. Doiel](https://orcid.org/0000-0003-0900-6903)
 
 
-### Programming languages
 
-- Go 1.23.1
 
-### Operating Systems
+
+
+A Go package for working with simple data models inspired by HTML5 web forms and complex models used in libraries and archives.
+
+- [License](https://spdx.org/licenses/BSD-3-Clause)
+- [Code Repository](https://github.com/caltechlibary/models)
+  - [Issue Tracker](https://github.com/caltehclibrary/models/isues)
+
+## Programming languages
+
+- Go
+
+
+## Operating Systems
 
 - Linux
 - Windows
 - macOS
 
-### Software Requiremets
 
-- Go &gt;= 1.23.1
-- GNU Make
-- Pandoc &gt;= 3.1
+## Software Requirements
+
+- Go >= 1.26
+
+
+## Software Suggestions
+
+- CMTools >= v0.0.43
+- Pandoc >= 3.9
+- GNU Make >= 3.8
+
+

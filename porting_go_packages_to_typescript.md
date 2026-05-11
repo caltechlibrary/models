@@ -2821,3 +2821,194 @@ It should be
 ```typescript
       { id: "element1", type: "text", attributes: { name: "element1" }, isObjectId: true },
 ```
+
+---
+
+I would like to port the Go source for `python.go` to TypeScript running under Deno 2.2. The TypeScript module will be called `python.ts`. The Go source follows.
+
+```go
+package models
+
+import (
+	"fmt"
+	"io"
+	"strings"
+)
+
+//
+// This package renders Python classes from a Model
+//
+
+// ModelToPythonClass renders a model as a Python class
+// @param out: io.Writer, where you rending the model text into
+// @param model: *Model, the model to be rendered
+func ModelToPythonClass(out io.Writer, model *Model) error {
+	// Include model.Id and model.Description as an opening comment.
+	fmt.Fprintf(out, `#
+# Model: %s
+#
+# %s
+#
+
+`, model.Id, model.Description)
+
+	className := model.Id
+	if len(className) > 1 {
+		className = strings.ToUpper(className[0:1]) + className[1:]
+	} else {
+		className = strings.ToUpper(className)
+	}
+	fmt.Fprintf(out, `# %s model's definition
+class %s:
+`, className, className)
+	for _, elem := range model.Elements {
+		varName := elem.Id
+		//varType := mapTypeToTypeScript(elem)
+		fmt.Fprintf(out, "    %s\n", varName)
+	}
+	fmt.Fprintln(out, "\n    def __init__(self):")
+	for _, elem := range model.Elements {
+		varName := elem.Id
+		varDefault := mapTypeToPythonDefault(elem)
+		fmt.Fprintf(out, "        self.%s = %s\n", varName, varDefault)
+	}
+	return nil
+}
+
+func mapTypeToPythonDefault(elem *Element) string {
+	dTypes := map[string]string{
+		"date":           "",
+		"datetime-local": "",
+		"month":          "",
+		"color":          "",
+		"email":          "",
+		"number":         "0",
+		"range":          "[]",
+		"text":           "",
+		"tel":            "",
+		"time":           "",
+		"url":            "",
+		"checkbox":       "false",
+		"password":       "",
+		"radio":          "",
+		"textarea":       "",
+		"orcid":          "",
+		"isni":           "",
+		"uuid":           "",
+		"ror":            "",
+	}
+	if val, ok := dTypes[elem.Type]; ok {
+		if val == "" {
+			return `""`
+		}
+		return val
+	}
+	return ""
+}
+```
+
+---
+
+When I run `deno check python.ts` I get the error below, can you fix this?
+
+```
+TS2339 [ERROR]: Property 'write' does not exist on type 'WritableStream<any>'.
+  await out.write(encoder.encode(`#\n# Model: ${model.id}\n#\n# ${model.description}\n#\n`));
+            ~~~~~
+    at file:///Users/rsdoiel/src/github.com/caltechlibrary/models/python.ts:11:13
+
+```
+
+---
+
+Using `html_test.ts` as a template create `python_test.ts` to test `python.ts`. 
+
+---
+
+When I run `deno check python_test.ts` I get the following error, can you fix it?
+
+```
+TS2339 [ERROR]: Property 'pipeThrough' does not exist on type 'WritableStream<any>'.
+  const readableStream = out.pipeThrough(decoder);
+                             ~~~~~~~~~~~
+    at file:///Users/rsdoiel/src/github.com/caltechlibrary/models/python_test.ts:20:30
+
+error: Type checking failed.
+```
+
+---
+
+In `python_test.ts`, "TestModelToPythonClass" initialize the model object from a YAML document using `@std/yaml`. 
+The code below to setup the contents of `out`.
+
+```typescript
+  // YAML document representing the form structure
+  const yamlDocument = `
+  id: testModel
+  description: ... description of testModel goes here ...
+  attributes: {}
+  elements:
+    - id: key
+      type: text
+      attributes:
+        name: key
+        required: true
+      is_object_id: true
+    - id: textInput
+      type: text
+      attributes:
+        name: textInput
+        required: "true"
+    - id: textArea
+      type: textarea
+      attributes:
+        name: textArea
+        required: "true"
+    - id: submitButton
+      type: submit
+      attributes:
+        value: Submit
+  `;
+
+  // Parse the YAML document
+  const parsedObject = parse(yamlDocument) as { [key: string]: any };
+
+  // Create a Model instance and populate it using fromObject
+  const model = new Model();
+  model.fromObject(parsedObject);
+
+  // Create a WritableStream to capture the output
+  const chunks: Uint8Array[] = [];
+  const output = new WritableStream({
+    write(chunk) {
+      chunks.push(chunk);
+    },
+    close() {
+      // Do nothing
+    },
+  });
+```
+
+---
+
+Please remove `import { TextDecoderStream } from "https://deno.land/std@0.152.0/streams/mod.ts";` it is not needed.
+
+---
+
+In `python.ts` change line 33 from 
+
+```typescript
+    const varDefault = mapTypeToPythonDefault(elem);
+```
+
+to 
+
+```typescript
+    const varDefault = mapTypeToPythonDefault(elem) || '''""''';
+```
+
+When `mapTypeToPythonDefault(elem)` returns undefined or an empty the variable `varDefault` must be the string
+formed of two double quote characters.
+
+---
+
