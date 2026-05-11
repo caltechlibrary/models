@@ -526,3 +526,94 @@ func TestElementCheck(t *testing.T) {
 		t.Errorf("Invalid element (list without nested elements) passed Check")
 	}
 }
+
+// TestValidateInterfaceErrors confirms field-level error paths are reported correctly.
+func TestValidateInterfaceErrors(t *testing.T) {
+	txt := `id: article
+Description: article schema
+elements:
+  - id: doi
+    type: doi
+    attributes:
+      required: "true"
+  - id: title
+    type: text
+    attributes:
+      required: "true"
+  - id: author
+    type: text
+    is_list: true
+    elements:
+      - id: given
+        type: text
+        attributes:
+          required: "true"
+      - id: family
+        type: text
+        attributes:
+          required: "true"
+`
+	model := new(Model)
+	if err := yaml.Unmarshal([]byte(txt), model); err != nil {
+		t.Fatalf("Failed to parse model YAML: %v", err)
+	}
+	SetDefaultTypes(model)
+
+	// Valid data: no errors expected
+	validData := map[string]interface{}{
+		"doi":   "10.1234/test",
+		"title": "Test Article",
+		"author": []interface{}{
+			map[string]interface{}{"given": "Jane", "family": "Doe"},
+		},
+	}
+	if errs := model.ValidateInterfaceErrors(validData); len(errs) != 0 {
+		t.Errorf("Expected no errors for valid data, got: %v", errs)
+	}
+
+	// Missing required field 'family' in author[0]: error path should be "author[0].family"
+	missingFamily := map[string]interface{}{
+		"doi":   "10.1234/test",
+		"title": "Test Article",
+		"author": []interface{}{
+			map[string]interface{}{"given": "Jane"},
+		},
+	}
+	errs := model.ValidateInterfaceErrors(missingFamily)
+	if len(errs) == 0 {
+		t.Errorf("Expected errors for missing family field, got none")
+	} else {
+		found := false
+		for _, e := range errs {
+			if e.Path == "author[0].family" {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Expected error at path 'author[0].family', got: %v", errs)
+		}
+	}
+
+	// Invalid DOI: error path should be "doi"
+	badDOI := map[string]interface{}{
+		"doi":   "not-a-doi",
+		"title": "Test Article",
+		"author": []interface{}{
+			map[string]interface{}{"given": "Jane", "family": "Doe"},
+		},
+	}
+	errs = model.ValidateInterfaceErrors(badDOI)
+	if len(errs) == 0 {
+		t.Errorf("Expected error for invalid DOI, got none")
+	} else {
+		found := false
+		for _, e := range errs {
+			if e.Path == "doi" {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Expected error at path 'doi', got: %v", errs)
+		}
+	}
+}

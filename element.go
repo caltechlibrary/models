@@ -124,6 +124,18 @@ func NewElement(elementId string) (*Element, error) {
 	return element, nil
 }
 
+// IsListType returns true when this element represents a list, whether expressed
+// as type: list (canonical) or the legacy is_list: true boolean.
+func (e *Element) IsListType() bool {
+	return e.Type == "list" || e.IsList
+}
+
+// IsObjectType returns true when this element represents an object, whether
+// expressed as type: object (canonical) or the legacy is_object: true boolean.
+func (e *Element) IsObjectType() bool {
+	return e.Type == "object" || e.IsObject
+}
+
 // HasChanged checks to see if the Element has been changed.
 func (e *Element) HasChanged() bool {
 	return e.isChanged
@@ -150,11 +162,11 @@ func (e *Element) Check(buf io.Writer) bool {
 		ok = false
 	}
 	// Check nested elements if present
-	if e.IsObject && len(e.Elements) == 0 {
+	if e.IsObjectType() && len(e.Elements) == 0 {
 		fmt.Fprintf(buf, "element, %q, is object but has no nested elements\n", e.Id)
 		ok = false
 	}
-	if e.IsList && len(e.Elements) == 0 {
+	if e.IsListType() && len(e.Elements) == 0 {
 		fmt.Fprintf(buf, "element, %q, is list but has no element template\n", e.Id)
 		ok = false
 	}

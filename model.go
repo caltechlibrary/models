@@ -31,6 +31,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sort"
 	"strings"
 )
 
@@ -38,6 +39,23 @@ import (
 // renders the model into the io.Writer. It is used to extend the Model to
 // support various output formats.
 type RenderFunc func(io.Writer, *Model) error
+
+// FieldError describes a validation failure at a specific field path.
+type FieldError struct {
+	// Path is the dot-notation path to the failing field, e.g. "author[0].family"
+	Path    string
+	// Message describes why validation failed
+	Message string
+	// Type is the element type that was expected, if known
+	Type    string
+}
+
+func (fe FieldError) Error() string {
+	if fe.Path != "" {
+		return fmt.Sprintf("%s: %s", fe.Path, fe.Message)
+	}
+	return fe.Message
+}
 
 // Model implements a data structure description inspired by GitHub YAML issue template syntax.
 // See <https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms>
@@ -171,83 +189,71 @@ func (model *Model) ValidateMapInterface(data map[string]interface{}) bool {
 	return true
 }
 
-// ValidateInterface validates the entire data structure against the model's schema.
-// This method handles both flat and nested structures (lists and objects).
-// For flat models, it behaves like ValidateMapInterface.
-// For nested models, it uses recursive validation.
-func (model *Model) ValidateInterface(data interface{}) bool {
+// ValidateInterfaceErrors validates data against the model's schema and returns
+// all field-level errors. An empty slice means validation passed.
+// Handles both flat and nested structures (lists and objects).
+func (model *Model) ValidateInterfaceErrors(data interface{}) []FieldError {
 	if model == nil {
-		if Debug {
-			log.Printf("model is nil, can't validate")
-		}
-		return false
+		return []FieldError{{Path: "", Message: "model is nil"}}
 	}
 
-	// If data is a map, check if it's a flat or nested model
+	root := &Element{
+		Type:     "object",
+		IsObject: true,
+		Elements: model.Elements,
+	}
+
 	if dataMap, ok := data.(map[string]interface{}); ok {
-		// Check if model has any nested elements
 		hasNested := false
 		for _, elem := range model.Elements {
-			if elem.IsList || elem.IsObject {
+			if elem.IsListType() || elem.IsObjectType() {
 				hasNested = true
 				break
 			}
 		}
-
-		if hasNested {
-			// Use recursive validation for nested structures
-			return model.validateObject(dataMap, &Element{
-				Type:     "object",
-				IsObject: true,
-				Elements: model.Elements,
-			}, "root")
+		if !hasNested {
+			// flat model: delegate to legacy logic and wrap any failure
+			if !model.ValidateMapInterface(dataMap) {
+				return []FieldError{{Path: "", Message: "record does not match schema"}}
+			}
+			return nil
 		}
-
-		// Use legacy validation for flat structures
-		return model.ValidateMapInterface(dataMap)
+		return model.validateObjectErrors(dataMap, root, "")
 	}
 
-	// For non-map data, use recursive validation starting from root
-	return model.ValidateRecursive(data, &Element{
-		Type:     "object",
-		IsObject: true,
-		Elements: model.Elements,
-	}, "root")
+	return model.validateRecursiveErrors(data, root, "")
 }
 
-// ValidateRecursive validates data against the model's schema, supporting nested structures.
-// It handles objects (maps) and lists (slices) recursively.
-// For list elements, it validates each item in the slice against the element's nested schema.
-// For object elements, it validates the map against the element's nested schema.
+// ValidateInterface validates the entire data structure against the model's schema.
+// Returns true if valid. For detailed errors use ValidateInterfaceErrors.
+func (model *Model) ValidateInterface(data interface{}) bool {
+	return len(model.ValidateInterfaceErrors(data)) == 0
+}
+
+// ValidateRecursive validates data against an element schema, supporting nested structures.
+// Returns true if valid. For detailed errors use validateRecursiveErrors.
 func (model *Model) ValidateRecursive(data interface{}, elem *Element, path string) bool {
+	return len(model.validateRecursiveErrors(data, elem, path)) == 0
+}
+
+// validateRecursiveErrors validates data against an element and collects all field errors.
+func (model *Model) validateRecursiveErrors(data interface{}, elem *Element, path string) []FieldError {
 	if elem == nil {
-		if Debug {
-			log.Printf("DEBUG ValidateRecursive: elem is nil at path %q", path)
-		}
-		return false
+		return []FieldError{{Path: path, Message: "element definition is nil"}}
 	}
 
-	// Handle nil data
 	if data == nil {
-		// Nil is acceptable for optional fields
-		if Debug {
-			log.Printf("DEBUG ValidateRecursive: data is nil at path %q, elem %q", path, elem.Id)
-		}
-		return true
+		return nil // nil is acceptable for optional fields
 	}
 
-	// For list elements: data should be a slice
-	if elem.IsList {
-		return model.validateList(data, elem, path)
+	if elem.IsListType() {
+		return model.validateListErrors(data, elem, path)
+	}
+	if elem.IsObjectType() {
+		return model.validateObjectErrors(data, elem, path)
 	}
 
-	// For object elements: data should be a map
-	if elem.IsObject {
-		return model.validateObject(data, elem, path)
-	}
-
-	// For simple types: use the existing type-based validation
-	// Normalize to string and use the validator
+	// Simple scalar: normalize to string and run the type validator
 	var val string
 	switch v := data.(type) {
 	case string:
@@ -261,115 +267,88 @@ func (model *Model) ValidateRecursive(data interface{}, elem *Element, path stri
 	case bool:
 		val = fmt.Sprintf("%t", v)
 	default:
+		msg := fmt.Sprintf("unsupported value type %T", data)
 		if Debug {
-			log.Printf("DEBUG ValidateRecursive: unsupported type %T for elem %q at path %q", data, elem.Id, path)
+			log.Printf("DEBUG validateRecursiveErrors: %s for elem %q at path %q", msg, elem.Id, path)
 		}
-		return false
+		return []FieldError{{Path: path, Message: msg, Type: elem.Type}}
 	}
 
-	// Use the type-specific validator if available
 	if validator, ok := model.validators[elem.Type]; ok {
 		if !validator(elem, val) {
+			msg := fmt.Sprintf("value %q is not a valid %s", val, elem.Type)
 			if Debug {
-				log.Printf("DEBUG ValidateRecursive: validation failed for elem %q at path %q, value %q", elem.Id, path, val)
+				log.Printf("DEBUG validateRecursiveErrors: %s at path %q", msg, path)
 			}
-			return false
+			return []FieldError{{Path: path, Message: msg, Type: elem.Type}}
 		}
-		return true
+		return nil
 	}
 
-	// No validator found for this type
+	msg := fmt.Sprintf("no validator registered for type %q", elem.Type)
 	if Debug {
-		log.Printf("DEBUG ValidateRecursive: no validator for type %q (elem %q) at path %q", elem.Type, elem.Id, path)
+		log.Printf("DEBUG validateRecursiveErrors: %s for elem %q at path %q", msg, elem.Id, path)
 	}
-	return false
+	return []FieldError{{Path: path, Message: msg, Type: elem.Type}}
 }
 
-// validateList validates a slice against a list element's schema.
-func (model *Model) validateList(data interface{}, elem *Element, path string) bool {
+// validateListErrors validates a slice against a list element's schema, collecting all errors.
+func (model *Model) validateListErrors(data interface{}, elem *Element, path string) []FieldError {
 	sliceData, ok := data.([]interface{})
 	if !ok {
+		msg := fmt.Sprintf("expected a list but got %T", data)
 		if Debug {
-			log.Printf("DEBUG validateList: expected slice at path %q, got %T", path, data)
+			log.Printf("DEBUG validateListErrors: %s at path %q", msg, path)
 		}
-		return false
+		return []FieldError{{Path: path, Message: msg, Type: elem.Type}}
 	}
 
-	// If the list element has nested elements, they define the schema for each item
+	var errs []FieldError
 	if len(elem.Elements) > 0 {
-		// Create a virtual element that wraps the nested elements
-		// This represents the schema for each item in the list
-		itemElem := &Element{
-			Type:     "object",
-			IsObject: true,
-			Elements: elem.Elements,
-		}
+		itemElem := &Element{Type: "object", IsObject: true, Elements: elem.Elements}
 		for i, item := range sliceData {
 			itemPath := fmt.Sprintf("%s[%d]", path, i)
-			if !model.ValidateRecursive(item, itemElem, itemPath) {
-				if Debug {
-					log.Printf("DEBUG validateList: item %d failed validation at path %q", i, path)
-				}
-				return false
-			}
+			errs = append(errs, model.validateRecursiveErrors(item, itemElem, itemPath)...)
 		}
-		return true
-	}
-
-	// Simple list without nested schema: validate each item as the element's type
-	for i, item := range sliceData {
-		itemPath := fmt.Sprintf("%s[%d]", path, i)
-		if !model.ValidateRecursive(item, elem, itemPath) {
-			if Debug {
-				log.Printf("DEBUG validateList: simple list item %d failed at path %q", i, path)
-			}
-			return false
+	} else {
+		for i, item := range sliceData {
+			itemPath := fmt.Sprintf("%s[%d]", path, i)
+			errs = append(errs, model.validateRecursiveErrors(item, elem, itemPath)...)
 		}
 	}
-	return true
+	return errs
 }
 
-// validateObject validates a map against an object element's schema.
-func (model *Model) validateObject(data interface{}, elem *Element, path string) bool {
+// validateObjectErrors validates a map against an object element's schema, collecting all errors.
+func (model *Model) validateObjectErrors(data interface{}, elem *Element, path string) []FieldError {
 	objData, ok := data.(map[string]interface{})
 	if !ok {
+		msg := fmt.Sprintf("expected an object but got %T", data)
 		if Debug {
-			log.Printf("DEBUG validateObject: expected map at path %q, got %T", path, data)
+			log.Printf("DEBUG validateObjectErrors: %s at path %q", msg, path)
 		}
-		return false
+		return []FieldError{{Path: path, Message: msg, Type: elem.Type}}
 	}
 
-	// Validate each nested element
+	var errs []FieldError
 	for _, nestedElem := range elem.Elements {
-		nestedPath := fmt.Sprintf("%s.%s", path, nestedElem.Id)
+		var nestedPath string
+		if path == "" {
+			nestedPath = nestedElem.Id
+		} else {
+			nestedPath = fmt.Sprintf("%s.%s", path, nestedElem.Id)
+		}
 		if nestedValue, ok := objData[nestedElem.Id]; ok {
-			if !model.ValidateRecursive(nestedValue, nestedElem, nestedPath) {
-				if Debug {
-					log.Printf("DEBUG validateObject: nested element %q failed at path %q", nestedElem.Id, nestedPath)
-				}
-				return false
-			}
+			errs = append(errs, model.validateRecursiveErrors(nestedValue, nestedElem, nestedPath)...)
 		} else if model.isRequired(nestedElem) {
-			// Required field is missing
+			msg := fmt.Sprintf("required field %q is missing", nestedElem.Id)
 			if Debug {
-				log.Printf("DEBUG validateObject: required field %q missing at path %q", nestedElem.Id, nestedPath)
+				log.Printf("DEBUG validateObjectErrors: %s at path %q", msg, nestedPath)
 			}
-			return false
+			errs = append(errs, FieldError{Path: nestedPath, Message: msg})
 		}
 	}
-
-	// Check for unexpected fields
-	for key := range objData {
-		if !model.hasNestedElement(elem, key) {
-			if Debug {
-				log.Printf("DEBUG validateObject: unexpected field %q at path %q", key, path)
-			}
-			// For now, we'll allow unexpected fields (forward compatibility)
-			// Could make this strict with a configuration option
-		}
-	}
-
-	return true
+	return errs
 }
 
 // hasNestedElement checks if an element has a nested element with the given ID.
@@ -524,6 +503,16 @@ func (m *Model) GetPrimaryId() string {
 		}
 	}
 	return ""
+}
+
+// SupportedElementTypes returns a sorted list of all registered type names.
+func (m *Model) SupportedElementTypes() []string {
+	types := make([]string, 0, len(m.genElements))
+	for t := range m.genElements {
+		types = append(types, t)
+	}
+	sort.Strings(types)
+	return types
 }
 
 // GetGeneratedTypes returns a map of elemend id and value held by .Generator

@@ -138,6 +138,153 @@ func TestROR(t *testing.T) {
 	//SetDebug(false);
 }
 
+// TestDOI tests DOI validation
+func TestDOI(t *testing.T) {
+	elem := &Element{Id: "doi", Type: "doi"}
+	valid := []string{
+		"10.1234/test",
+		"10.22002/bv2pv-2b295",
+		"https://doi.org/10.1038/nature12373",
+		"doi:10.1000/xyz123",
+	}
+	for _, v := range valid {
+		if !ValidateDOI(elem, v) {
+			t.Errorf("expected ValidateDOI to accept %q", v)
+		}
+	}
+	invalid := []string{
+		"not-a-doi",
+		"10./missing-registrant",
+		"10.123/too-short-prefix",
+		"11.1234/wrong-prefix",
+	}
+	for _, v := range invalid {
+		if ValidateDOI(elem, v) {
+			t.Errorf("expected ValidateDOI to reject %q", v)
+		}
+	}
+}
+
+// TestISBN tests ISBN-10 and ISBN-13 checksum validation
+func TestISBN(t *testing.T) {
+	elem := &Element{Id: "isbn", Type: "isbn"}
+	valid := []string{
+		"0-306-40615-2",   // ISBN-10
+		"978-3-16-148410-0", // ISBN-13
+		"0306406152",      // ISBN-10 no dashes
+		"9783161484100",   // ISBN-13 no dashes
+	}
+	for _, v := range valid {
+		if !ValidateISBN(elem, v) {
+			t.Errorf("expected ValidateISBN to accept %q", v)
+		}
+	}
+	invalid := []string{
+		"0-306-40615-3",   // bad check digit
+		"978-3-16-148410-1", // bad check digit
+		"12345",
+	}
+	for _, v := range invalid {
+		if ValidateISBN(elem, v) {
+			t.Errorf("expected ValidateISBN to reject %q", v)
+		}
+	}
+}
+
+// TestISSN tests ISSN checksum validation
+func TestISSN(t *testing.T) {
+	elem := &Element{Id: "issn", Type: "issn"}
+	valid := []string{
+		"0317-8471",
+		"1050-124X",
+		"ISSN 0317-8471",
+	}
+	for _, v := range valid {
+		if !ValidateISSN(elem, v) {
+			t.Errorf("expected ValidateISSN to accept %q", v)
+		}
+	}
+	invalid := []string{
+		"0317-8472", // bad check digit
+		"1234-5678", // bad check digit
+		"notanissn",
+	}
+	for _, v := range invalid {
+		if ValidateISSN(elem, v) {
+			t.Errorf("expected ValidateISSN to reject %q", v)
+		}
+	}
+}
+
+// TestPMCID tests PubMed Central ID validation
+func TestPMCID(t *testing.T) {
+	elem := &Element{Id: "pmcid", Type: "pmcid"}
+	valid := []string{"PMC1234567", "PMC9999999", "1234567"}
+	for _, v := range valid {
+		if !ValidatePMCID(elem, v) {
+			t.Errorf("expected ValidatePMCID to accept %q", v)
+		}
+	}
+	invalid := []string{"notapmcid", "PM1234567", "PMC"}
+	for _, v := range invalid {
+		if ValidatePMCID(elem, v) {
+			t.Errorf("expected ValidatePMCID to reject %q", v)
+		}
+	}
+}
+
+// TestARK tests ARK identifier validation
+func TestARK(t *testing.T) {
+	elem := &Element{Id: "ark", Type: "ark"}
+	valid := []string{
+		"ark:/99999/fk4cz3dh0",
+		"ark:13960/t6m042c11",
+		"ark:/12025/654xz321",
+	}
+	for _, v := range valid {
+		if !ValidateARK(elem, v) {
+			t.Errorf("expected ValidateARK to accept %q", v)
+		}
+	}
+	invalid := []string{
+		"not-an-ark",
+		"ark:/999/too-short-naan",
+		"http://example.org/ark",
+		"ark:",
+	}
+	for _, v := range invalid {
+		if ValidateARK(elem, v) {
+			t.Errorf("expected ValidateARK to reject %q", v)
+		}
+	}
+}
+
+// TestWikidata tests Wikidata QID validation
+func TestWikidata(t *testing.T) {
+	elem := &Element{Id: "wikidata", Type: "wikidata"}
+	valid := []string{
+		"Q42",
+		"Q1234567",
+		"https://www.wikidata.org/entity/Q42",
+	}
+	for _, v := range valid {
+		if !ValidateWikidata(elem, v) {
+			t.Errorf("expected ValidateWikidata to accept %q", v)
+		}
+	}
+	invalid := []string{
+		"q42",            // lowercase Q not accepted
+		"42",             // missing Q prefix
+		"QQ42",           // double Q
+		"not-a-qid",
+	}
+	for _, v := range invalid {
+		if ValidateWikidata(elem, v) {
+			t.Errorf("expected ValidateWikidata to reject %q", v)
+		}
+	}
+}
+
 // TestValidateModelTypes test model element types from YAML input
 func TestValidateModelTypes(t *testing.T) {
 	src := []byte(`id: people_model

@@ -44,7 +44,7 @@ import (
 const (
 	OrcidPattern = `[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9A-Z]`
 	RORPattern   = `^0[a-hj-km-np-tv-z|0-9]{6}[0-9]{2}$`
-	ISNIPattern  = `[0-9]{4} [0-9]{4} [0-9]{4] [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4]-[0-9X]{4}`
+	ISNIPattern  = `[0-9]{4} [0-9]{4} [0-9]{4} [0-9X]{4}|[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9X]{4}`
 	// ISBN patterns - use simple placeholder patterns; real validation done in ValidateISBN
 	ISBN10Pattern = `[0-9\- ]{10,17}`
 	ISBN13Pattern = `[0-9\- ]{13,26}`
@@ -69,23 +69,29 @@ const (
 	VIAFPattern = `^[0-9]+$`
 	// SNAC pattern
 	SNACPattern = `^[0-9]+$`
+	// ARK pattern: optional ark:/ prefix, 5-digit NAAN, slash, name
+	ARKPattern = `^ark:/?[0-9]{5}/[-.a-zA-Z0-9_~]+`
+	// Wikidata QID pattern: Q followed by one or more digits
+	WikidataPattern = `^Q[0-9]+$`
 )
 
 var (
-	ReORCID  *regexp.Regexp
-	ReROR    *regexp.Regexp
-	ReISNI   *regexp.Regexp
-	ReISBN   *regexp.Regexp
-	ReISSN   *regexp.Regexp
-	ReDOI    *regexp.Regexp
-	ReARXIV  *regexp.Regexp
-	ReEAN    *regexp.Regexp
-	RePMID   *regexp.Regexp
-	RePMCID  *regexp.Regexp
-	ReFundRef *regexp.Regexp
-	ReLCNAF  *regexp.Regexp
-	ReVIAF   *regexp.Regexp
-	ReSNAC   *regexp.Regexp
+	ReORCID    *regexp.Regexp
+	ReROR      *regexp.Regexp
+	ReISNI     *regexp.Regexp
+	ReISBN     *regexp.Regexp
+	ReISSN     *regexp.Regexp
+	ReDOI      *regexp.Regexp
+	ReARXIV    *regexp.Regexp
+	ReEAN      *regexp.Regexp
+	RePMID     *regexp.Regexp
+	RePMCID    *regexp.Regexp
+	ReFundRef  *regexp.Regexp
+	ReLCNAF    *regexp.Regexp
+	ReVIAF     *regexp.Regexp
+	ReSNAC     *regexp.Regexp
+	ReARK      *regexp.Regexp
+	ReWikidata *regexp.Regexp
 )
 
 // GenerateROR setups up for an HTML ROR type input element
@@ -1142,6 +1148,86 @@ func ValidateSNAC(elem *Element, formValue string) bool {
 	return ReSNAC.MatchString(val)
 }
 
+// GenerateList sets up a list element (a repeatable sequence of sub-elements).
+// At the web form level this is typically rendered as a JSON-encoded textarea.
+func GenerateList() *Element {
+	return &Element{
+		Type: "list",
+	}
+}
+
+// ValidateList is a no-op at the scalar level; list contents are validated
+// recursively by the model's validateListErrors method.
+func ValidateList(elem *Element, formValue string) bool {
+	return true
+}
+
+// GenerateObject sets up an object element (a named set of sub-elements).
+// At the web form level this is typically rendered as a JSON-encoded textarea.
+func GenerateObject() *Element {
+	return &Element{
+		Type: "object",
+	}
+}
+
+// ValidateObject is a no-op at the scalar level; object contents are validated
+// recursively by the model's validateObjectErrors method.
+func ValidateObject(elem *Element, formValue string) bool {
+	return true
+}
+
+// GenerateARK sets up for an HTML input type text using a pattern for ARK identifiers
+func GenerateARK() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     ARKPattern,
+			"placeholder": "e.g. ark:/99999/fk4cz3dh0",
+		},
+	}
+}
+
+// ValidateARK validates an ARK (Archival Resource Key) identifier.
+// Accepts bare NAANs (ark:/NAAN/name) or fully qualified ARKs with qualifiers.
+// The NAAN (Name Assigning Authority Number) must be exactly 5 digits.
+func ValidateARK(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.TrimSpace(formValue)
+	// Normalize: ensure ark: prefix is present
+	if !strings.HasPrefix(strings.ToLower(val), "ark:") {
+		return false
+	}
+	return ReARK.MatchString(val)
+}
+
+// GenerateWikidata sets up for an HTML input type text for Wikidata QIDs
+func GenerateWikidata() *Element {
+	return &Element{
+		Type: "text",
+		Attributes: map[string]string{
+			"pattern":     WikidataPattern,
+			"placeholder": "e.g. Q42",
+		},
+	}
+}
+
+// ValidateWikidata validates a Wikidata QID (e.g. Q42, Q1234567).
+// Strips the https://www.wikidata.org/entity/ prefix if present.
+func ValidateWikidata(elem *Element, formValue string) bool {
+	if formValue == "" {
+		return true
+	}
+	val := strings.TrimSpace(formValue)
+	if strings.HasPrefix(val, "https://www.wikidata.org/entity/") {
+		val = strings.TrimPrefix(val, "https://www.wikidata.org/entity/")
+	} else if strings.HasPrefix(val, "http://www.wikidata.org/entity/") {
+		val = strings.TrimPrefix(val, "http://www.wikidata.org/entity/")
+	}
+	return ReWikidata.MatchString(val)
+}
+
 func SetDefaultTypes(model *Model) {
 	model.Define("date", GenerateDate, ValidateDate)
 	model.Define("datetime-local", GenerateDateTimeLocal, ValidateDateTimeLocal)
@@ -1174,6 +1260,10 @@ func SetDefaultTypes(model *Model) {
 	model.Define("lcnaf", GenerateLCNAF, ValidateLCNAF)
 	model.Define("viaf", GenerateVIAF, ValidateVIAF)
 	model.Define("snac", GenerateSNAC, ValidateSNAC)
+	model.Define("ark", GenerateARK, ValidateARK)
+	model.Define("wikidata", GenerateWikidata, ValidateWikidata)
+	model.Define("list", GenerateList, ValidateList)
+	model.Define("object", GenerateObject, ValidateObject)
 
 	// NOTE: The following are not in the default but their usefulness
 	// in the context of persisting data is not clear.
@@ -1201,4 +1291,6 @@ func init() {
 	ReLCNAF = regexp.MustCompilePOSIX(LCNAFPattern)
 	ReVIAF = regexp.MustCompilePOSIX(VIAFPattern)
 	ReSNAC = regexp.MustCompilePOSIX(SNACPattern)
+	ReARK = regexp.MustCompile(ARKPattern)
+	ReWikidata = regexp.MustCompilePOSIX(WikidataPattern)
 }
