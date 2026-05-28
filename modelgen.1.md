@@ -1,6 +1,6 @@
-%modelgen(1) user manual | version 0.0.5 5a3facf
+%modelgen(1) user manual | version 0.0.7 6d86f3a
 % R. S. Doiel
-% 2024-12-10
+% 2026-05-11
 
 # NAME
 

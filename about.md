@@ -4,23 +4,23 @@ message: "If you use this software, please cite it as below."
 type: software
 title: "models"
 abstract: "A Go package for working with simple data models inspired by
-HTML5 web forms."
+HTML5 web forms and complex models used in libraries and archives."
 authors:
   - family-names: Doiel
     given-names: R. S.
     orcid: ""
 
 repository-code: "https://github.com/caltechlibary/models"
-version: 0.0.5
+version: 0.0.7
 license-url: "https://spdx.org/licenses/BSD-3-Clause"
 keywords: [ "metadata" ]
-date-released: 2024-10-15
+date-released: 2026-05-11
 ---
 
 About this software
 ===================
 
-## models 0.0.5
+## models 0.0.7
 
 ### Authors
 
@@ -29,7 +29,7 @@ About this software
 
 
 A Go package for working with simple data models inspired by HTML5 web
-forms.
+forms and complex models used in libraries and archives.
 
 - License: <https://spdx.org/licenses/BSD-3-Clause>
 - GitHub: <https://github.com/caltechlibary/models>
@@ -38,7 +38,7 @@ forms.
 
 ### Programming languages
 
-- Go 1.23.1
+-  
 
 ### Operating Systems
 
@@ -48,6 +48,4 @@ forms.
 
 ### Software Requiremets
 
-- Go &gt;= 1.23.1
-- GNU Make
-- Pandoc &gt;= 3.1
+- Go &gt;= 1.26

@@ -16,9 +16,9 @@
     }
   ],
   "dateCreated": "2024-09-20",
-  "dateModified": "2025-03-24",
-  "datePublished": "2025-03-24",
-  "description": "A Go and TypeScript package for working with simple data models inspired by HTML5 web forms.",
+  "dateModified": "2026-05-11",
+  "datePublished": "2026-05-11",
+  "description": "A Go package for working with simple data models inspired by HTML5 web forms and complex models used in libraries and archives.",
   "funder": {
     "type": "Organization",
     "name": "Caltech Library"
@@ -32,21 +32,21 @@
     "macOS"
   ],
   "programmingLanguage": [
-    "Go",
-    "TypeScript"
-  ],
-  "relatedLink": [
-    "https://github.com/caltechlibrary/dataset",
-    "https://github.com/caltechlibrary/newt"
+    "Go"
   ],
   "softwareRequirements": [
-    "Go >= 1.23.1",
-    "GNU Make",
-    "Pandoc >= 3.1"
+    "Go >= 1.26"
   ],
-  "version": "0.0.6",
-  "developmentStatus": "wip",
+  "softwareSuggestions": [
+    "CMTools >= v0.0.43",
+    "Pandoc >= 3.9",
+    "GNU Make >= 3.8"
+  ],
+  "version": "0.0.7",
+  "developmentStatus": "archive",
   "issueTracker": "https://github.com/caltehclibrary/models/isues",
   "downloadUrl": "https://github.com/caltechlibrary/models/releases",
-  "releaseNotes": "Refined interactive modeler, added TypeScript modules."
+  "releaseNotes": "- cleaned up models\n- the new structures module will supply the modeling UI",
+  "copyrightYear": 2026,
+  "copyrightHolder": "California Institute of Technology"
 }
