@@ -14,7 +14,7 @@ macOS, Linux and if you're using Windows with the Unix subsystem. This
 would be run from your shell (e.g. Terminal on macOS).
 
 ~~~
-curl https://caltechlibrary.github.io/models/installer.sh | sh
+curl https://software.library.caltech.edu/models/installer.sh | sh
 ~~~
 
 This will install modelgen in your `$HOME/bin` directory.
@@ -23,7 +23,7 @@ If you are running Windows 10 or 11 use the Powershell command
 below.
 
 ~~~
-irm https://caltechlibrary.github.io/models/installer.ps1 | iex
+irm https://software.library.caltech.edu/models/installer.ps1 | iex
 ~~~
 
 If your want to install a specific verions set the `PKG_VERSION` environment
@@ -33,14 +33,14 @@ For Linux and macOS
 
 ~~~
 export PKG_VERSION=0.0.1
-curl https://caltechlibrary.github.io/models/installer.sh | sh
+curl https://software.library.caltech.edu/models/installer.sh | sh
 ~~~
 
 For Windows
 
 ~~~
 $env:PKG_VERSION = '0.0.1'
-irm https://caltechlibrary.github.io/models/installer.ps1 | iex
+irm https://software.library.caltech.edu/models/installer.ps1 | iex
 ~~~
 
 ## Compiling from source
