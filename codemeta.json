@@ -43,7 +43,7 @@
     "GNU Make >= 3.8"
   ],
   "version": "0.0.7",
-  "developmentStatus": "archive",
+  "developmentStatus": "active",
   "issueTracker": "https://github.com/caltehclibrary/models/isues",
   "downloadUrl": "https://github.com/caltechlibrary/models/releases",
   "releaseNotes": "- cleaned up models\n- the new structures module will supply the modeling UI",
